@@ -10,6 +10,8 @@ import SwiftUI
 struct EndGameView: View {
     var body: some View {
         
+      
+        
         
     }
 }
