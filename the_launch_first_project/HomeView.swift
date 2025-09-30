@@ -14,7 +14,6 @@ struct HomeView: View {
     var body: some View {
         VStack {
             
-            padding (.top,202)
             // LOGO
             Image("logo")
                 .resizable()
@@ -26,11 +25,13 @@ struct HomeView: View {
                     withAnimation(.easeInOut(duration: 1)) {
                         logoOffset = -200
                     }
-                    
+            
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         isButtonVisible = true
                     }
                 }
+                .padding (.top,202)
+
             
             Spacer()
                 
@@ -44,13 +45,11 @@ struct HomeView: View {
                                .resizable()
                                .scaledToFit()
                                .frame(width: 227, height: 55)
-                               .border(Color.red, width: 1)
-                           
+ 
                            Text("العب")
                                .font(.MainText)
                                .foregroundColor(.white)
-                               .border(Color.red, width: 1)
-                           
+ 
                        }
                    }
                    

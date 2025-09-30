@@ -18,7 +18,6 @@ struct ContentView: View {
                 HomeView()
                 AddPlayerView()
                 RoleView()
-                TimeView()
                 TimerView()
                 EndGameView()
             }
