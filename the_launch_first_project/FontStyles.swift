@@ -14,8 +14,6 @@ extension Font {
     }
     
     
-    
-    
     static var PlayerText: Font {
         return Font.custom("splart-h-mawaddah2black", size: 24)
     }
