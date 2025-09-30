@@ -9,8 +9,7 @@ import SwiftUI
 
 struct RoleView: View {
     var body: some View {
-     
-    }
+     }
 }
 
 #Preview {
