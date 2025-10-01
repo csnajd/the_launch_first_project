@@ -1,69 +1,161 @@
 import SwiftUI
 
 struct RoleView: View {
-    let allRoles = ["الولد", "البنت", "العجوز"]
-    @State private var remainingRoles: [String] = ["الولد", "البنت", "العجوز"]
-    @State private var selectedRole: String? = nil
-    @State private var rolesFinished = false
+    let playerNames: [String]
+    @State private var assignedRoles: [String: String] = [:]
+    @State private var remainingPlayers: [String] = []
+    @State private var currentPlayer: String? = nil
+    @State private var showRolePage = false
+    
+    private let roles = ["ولد", "بنت", "عجوز"]
+    var onComplete: (() -> Void)?
+    
+    init(playerNames: [String], onComplete: (() -> Void)? = nil) {
+        self.playerNames = playerNames
+        self._remainingPlayers = State(initialValue: playerNames)
+        self.onComplete = onComplete
+    }
     
     var body: some View {
-        VStack(spacing: 20) {
-            if let role = selectedRole {
-                Text(role)
-                    .font(.custom("MainText", size: 28))
-                    .bold()
-                
-                Text(instructions(for: role))
-                    .font(.custom("MainText", size: 24))
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                Button(action: {
-                    selectedRole = nil
-                    if remainingRoles.isEmpty {
-                        rolesFinished = true
+        ZStack {
+            // Player's Intro Page
+            if let player = currentPlayer, let role = assignedRoles[player], !showRolePage {
+                VStack {
+                    // Top section - Name and text
+                    VStack(spacing: 20) {
+                        Text(player)
+                            .font(.PlayerNameText)
+                            .bold()
+                        
+                        Text("لا تخلي احد غيرك يشوف")
+                            .font(.PlayerText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
-                }) {
-                    ZStack {
-                        Image("purpleBL")
+                    .frame(maxHeight: .infinity)
+                    
+                    // Bottom section - Button
+                    Button(action: {
+                        showRolePage = true
+                    }) {
+                        ZStack{
+                            Image("purpleBS")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 227, height: 55)
+                            
+                            Text("يلا")
+                                .font(.MainText)
+                                .foregroundColor(.white)
+                        }                    }
+                    .padding(.bottom, 40)
+                }
+                .padding()
+            }
+            
+            // Role Page
+            if let player = currentPlayer, let role = assignedRoles[player], showRolePage {
+                VStack {
+                    // Top section - Name, image and instructions
+                    VStack(spacing: 20) {
+                        Text(player)
+                            .font(.PlayerNameText)
+                            .bold()
+                        
+                        Image(imageName(for: role))
                             .resizable()
-                            .frame(width: 200, height: 55)
-                        Text("التالي")
-                            .font(.custom("MainText", size: 24))
+                            .scaledToFit()
+                            .frame(height: 280)
+                        
+                        Text(instructions(for: role))
+                            .font(.PlayerText)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+                    .frame(maxHeight: .infinity)
+                    
+                    // Bottom section - Button
+                    Button(action: {
+                        showRolePage = false
+                        currentPlayer = nil
+                        if remainingPlayers.isEmpty {
+                            onComplete?()
+                        } else {
+                            if let nextPlayer = remainingPlayers.first {
+                                currentPlayer = nextPlayer
+                                remainingPlayers.removeFirst()
+                            }
+                        }
+                    }) { ZStack{
+                        Image("purpleBS")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 227, height: 55)
+                        
+                        Text("يلا")
+                            .font(.MainText)
                             .foregroundColor(.white)
                     }
-                }
-            } else {
-                if !rolesFinished {
-                    Button(action: {
-                        if let newRole = remainingRoles.randomElement() {
-                            selectedRole = newRole
-                            remainingRoles.removeAll { $0 == newRole }
-                        }
-                    }) {
-                        ZStack {
-                            Image("purpleBL")
-                                .resizable()
-                                .frame(width: 200, height: 55)
-                            Text("اعرف دورك !")
-                                .font(.custom("MainText", size: 24))
-                                .foregroundColor(.white)
-                        }
                     }
+                    .padding(.bottom, 40)
+                }
+                .padding()
+            }
+        }
+        .onAppear {
+            assignRandomRoles()
+            if remainingPlayers.isEmpty && !playerNames.isEmpty {
+                remainingPlayers = playerNames
+            }
+            // Start with first player's intro page immediately
+            if currentPlayer == nil, let firstPlayer = remainingPlayers.first {
+                currentPlayer = firstPlayer
+                remainingPlayers.removeFirst()
+                showRolePage = false
+            }
+        }
+    }
+    
+    func assignRandomRoles() {
+        var availableRoles = roles
+        var shuffledPlayers = playerNames.shuffled()
+        
+        assignedRoles.removeAll()
+        
+        for player in shuffledPlayers {
+            if availableRoles.isEmpty {
+                availableRoles = roles
+            }
+            if let randomRole = availableRoles.randomElement() {
+                assignedRoles[player] = randomRole
+                if let index = availableRoles.firstIndex(of: randomRole) {
+                    availableRoles.remove(at: index)
                 }
             }
         }
-        .padding()
+    }
+    
+    func imageName(for role: String) -> String {
+        switch role {
+        case "ولد":
+            return "imBoy"
+        case "بنت":
+            return "imGirl"
+        case "عجوز":
+            return "imOld"
+        default:
+            return "imBoy"
+        }
     }
     
     func instructions(for role: String) -> String {
         switch role {
-        case "الولد":
+        case "ولد":
+            return "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!"
+        case "بنت":
             return "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!"
-        case "البنت":
-            return "لازم تنتبهين للولد لما يخطبك وتعلنين خطبتك!"
-        case "العجوز":
-            return "لازم تراقب اللاعبين وتقفط الولد عشان تحمي بناتك!"
+        case "عجوز":
+            return "لازم تنتبهين للولد لما يخطيك وتعلنين خطبتك!"
         default:
             return "دورك غير معروف"
         }
@@ -71,7 +163,5 @@ struct RoleView: View {
 }
 
 #Preview {
-    RoleView()
+    RoleView(playerNames: ["Player1", "Player2", "Player3"])
 }
-
-
