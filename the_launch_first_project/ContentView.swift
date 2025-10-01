@@ -60,6 +60,7 @@ struct HomeView: View {
                             .foregroundColor(.white)
                     }
                 }
+            
                 .transition(.move(edge: .bottom))
                 .padding(.bottom, 179)
             }
