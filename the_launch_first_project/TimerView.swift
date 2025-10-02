@@ -21,63 +21,69 @@ struct TimerView: View {
                     isRunning: timerManager.isRunning
                 )
                 
+                                
+                
                 // Control Buttons
                 HStack(spacing: 20) {
-                    Button(action: {
-                        timerManager.togglePause()
-                    }) {
-                        Image(systemName: timerManager.isRunning ? "pause.fill" : "play.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(Color(hex: "9333EA"))
-                            .frame(width: 60, height: 60)
-                            .background(Color.white)
-                            .cornerRadius(15)
-                            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-                    }
                     
-                    Button(action: {
-                        timerManager.reset()
-                    }) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 24))
-                            .foregroundColor(Color(hex: "9333EA"))
-                            .frame(width: 60, height: 60)
-                            .background(Color.white)
-                            .cornerRadius(15)
-                            .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-                    }
-                }
-                .padding(.top, 30)
-                
-                // Quick Adjust Buttons
-                HStack(spacing: 20) {
+                    // Minus action (unchanged)
                     Button(action: {
                         timerManager.adjustTime(by: -30)
                     }) {
-                        Image(systemName: "minus")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(hex: "9333EA"))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        Text("-")
+                            .font(.system(size: 40))
+                            .foregroundColor(.ppurple)
                     }
-                    
+
+                    // Play/Pause button
+                    Button(action: {
+                        timerManager.togglePause()
+                    }) {
+                        ZStack {
+                            Image("yellowC")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 60, height: 60)
+                            
+                            Image(systemName: timerManager.isRunning ? "pause.fill" : "play.fill")
+                                .font(.PlayerText)
+                                .bold()
+                                .foregroundColor(.background)
+                                .frame(width: 55, height: 55)
+                        }
+                        
+                       
+                    }
+
+                    // Reset button with your custom image
+                    Button(action: {
+                        timerManager.reset()
+                    }) {
+                        ZStack {
+                            Image("yellowC")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 60, height: 60)
+                            
+                            Image(systemName: "arrow.clockwise")
+                                .font(.PlayerText)
+                                .bold()
+                                .foregroundColor(.background)
+                                .frame(width: 55, height: 55)
+                        }
+                    }
+
+                    // Plus action (unchanged)
                     Button(action: {
                         timerManager.adjustTime(by: 30)
                     }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(Color(hex: "9333EA"))
-                            .padding(.horizontal, 20)
-                            .padding(.vertical, 12)
-                            .background(Color.white)
-                            .cornerRadius(12)
-                            .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 2)
+                        Text("+")
+                            .font(.system(size: 30))
+                            .foregroundColor(.ppurple)
                     }
                 }
-                .padding(.top, 20)
+                .padding(.bottom, 40)
+                
                 
         
             } else {
@@ -125,16 +131,21 @@ struct TimerView: View {
     }
 }
 
+
+
+
+
+
 struct TimePresetsView: View {
     @Binding var selectedTime: Double
     
     let presets: [(time: Double, label: String)] = [
-        (30, "٣٠ث"),
-        (60, "١د"),
-        (90, "١.٥د"),
-        (120, "٢د"),
-        (150, "٢.٥د"),
-        (180, "٣د")
+        (30, "30s"),
+        (60, "1m"),
+        (90, "1.5m"),
+        (120, "2m"),
+        (150, "2.5m"),
+        (180, "3m")
     ]
     
     
@@ -185,35 +196,7 @@ struct PresetButton: View {
     }
 }
 
-struct TimeSliderView: View {
-    @Binding var selectedTime: Double
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Text("Custom:")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(hex: "9333EA"))
-                
-                Spacer()
-                
-                Text(formatTime(selectedTime))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(Color(hex: "9333EA"))
-            }
-            
-            Slider(value: $selectedTime, in: 1...180, step: 1)
-                .accentColor(Color(hex: "9333EA"))
-        }
-        .padding(.horizontal, 30)
-    }
-    
-    private func formatTime(_ seconds: Double) -> String {
-        let mins = Int(seconds) / 60
-        let secs = Int(seconds) % 60
-        return String(format: "%dm %02ds", mins, secs)
-    }
-}
+
 
 struct AnimatedClockView: View {
     let timeRemaining: Double
@@ -227,39 +210,35 @@ struct AnimatedClockView: View {
     
     var body: some View {
         ZStack {
-            // Outer circles
-            Circle()
-                .stroke(Color(hex: "FFD580").opacity(0.3), lineWidth: 3)
-                .frame(width: 280, height: 280)
             
-            Circle()
-                .stroke(Color(hex: "E9D5FF").opacity(0.3), lineWidth: 3)
-                .frame(width: 270, height: 270)
-            
-            // Inner background circle
-            Circle()
-                .fill(Color(hex: "FFFEF0"))
-                .frame(width: 260, height: 260)
+            Image ("timer")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
+                .position(x: 206.5, y: 125.5)
             
             // Progress arc
+                        Circle()
+                            .trim(from: 0, to: progress)
+                            .stroke(
+                                .yyellow,
+                                style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                            )
+                            .frame(width: 260, height: 260)
+                            .rotationEffect(.degrees(-90))
+                            .animation(.linear(duration: 0.3), value: progress)
+                        
+            // Outer circles
             Circle()
-                .trim(from: 0, to: progress)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color(hex: "9333EA"), Color(hex: "A855F7")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    style: StrokeStyle(lineWidth: 8, lineCap: .round)
-                )
-                .frame(width: 260, height: 260)
-                .rotationEffect(.degrees(-90))
-                .animation(.linear(duration: 0.3), value: progress)
+                .stroke(Color.ppurple, lineWidth: 13)
+                .frame(width: 280, height: 280)
+                  
             
             // Clock markers
-            ForEach(0..<4) { index in
-                ClockMarker(index: index)
-            }
+                        ForEach(0..<4) { index in
+                            ClockMarker(index: index)
+                        }
+                        
             
             // Time display
             Text(formatTime(timeRemaining))
@@ -273,7 +252,7 @@ struct AnimatedClockView: View {
         if percentage <= 10 {
             return Color.red
         } else {
-            return Color(hex: "F59E0B")
+            return Color(.ppurple)
         }
     }
     
@@ -289,7 +268,7 @@ struct ClockMarker: View {
     
     var body: some View {
         Rectangle()
-            .fill(Color(hex: "9333EA"))
+            .fill(.ppurple)
             .frame(width: 8, height: 20)
             .cornerRadius(4)
             .offset(y: -140)
@@ -297,27 +276,6 @@ struct ClockMarker: View {
     }
 }
 
-struct ClockHand: View {
-    let progress: Double
-    let isRunning: Bool
-    
-    var body: some View {
-        ZStack {
-            // Hand base
-            Circle()
-                .fill(Color(hex: "9333EA"))
-                .frame(width: 20, height: 20)
-            
-            // Hand pointer
-            RoundedRectangle(cornerRadius: 4)
-                .fill(Color(hex: "9333EA"))
-                .frame(width: 8, height: 70)
-                .offset(y: -35)
-        }
-        .rotationEffect(.degrees(progress * 360 - 90))
-        .animation(isRunning ? .linear(duration: 0.3) : .default, value: progress)
-    }
-}
 
 class TimerManager: ObservableObject {
     @Published var selectedTime: Double = 132 // 2m 12s default
@@ -415,3 +373,4 @@ extension Color {
 #Preview {
     TimerView()
 }
+
