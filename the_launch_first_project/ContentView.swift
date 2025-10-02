@@ -13,9 +13,11 @@ struct ContentView: View {
             Color.background
                 .ignoresSafeArea()
             HomeView()
+
         }
     }
 }
+
 
 struct HomeView: View {
     @State private var logoOffset: CGFloat = 0
@@ -67,6 +69,8 @@ struct HomeView: View {
         }
     }
 }
+
+
 
 #Preview {
     ContentView()

@@ -123,9 +123,10 @@ struct AddPlayerView: View {
                     .padding(.bottom)
                 }
             }
+            .environment(\.layoutDirection, .rightToLeft)
+            .navigationBarBackButtonHidden(true)
         }
-        .environment(\.layoutDirection, .rightToLeft)
-    }
+     }
 }
 
 #Preview {
