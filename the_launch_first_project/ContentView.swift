@@ -17,6 +17,8 @@ struct ContentView: View {
             }
         }}
 }
+
+
 struct HomeView: View {
     @State private var logoOffset: CGFloat = 0
     @State private var isButtonVisible = false
@@ -60,6 +62,9 @@ struct HomeView: View {
         }
     }
 }
+
+
+
 #Preview {
     ContentView()
    

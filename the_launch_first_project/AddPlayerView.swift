@@ -41,6 +41,7 @@ struct AddPlayerView: View {
                                         .frame(width: 274, height: 40)
                                     }
 
+                                    // زر الحذف
                                     Button {
                                         if names.count > 3 { names.remove(at: i) }
                                     } label: {
@@ -127,10 +128,10 @@ struct AddPlayerView: View {
                 }
                 .padding(.bottom)
             }
+            .environment(\.layoutDirection, .rightToLeft)
+            .navigationBarBackButtonHidden(true)
         }
-        .environment(\.layoutDirection, .rightToLeft)
-        .navigationBarHidden(true)
-    }
+     }
 }
 
 #Preview {
