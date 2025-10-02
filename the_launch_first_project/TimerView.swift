@@ -39,6 +39,7 @@ struct TimerView: View {
                     }
                     .padding()
                     
+                   
                 } else if timerManager.isRunning || timerManager.isPaused {
                     // Running Timer View
                     AnimatedClockView(
@@ -229,7 +230,7 @@ struct AnimatedClockView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 150, height: 150)
-                .position(x: 206.5, y: 125.5)
+                .position(x: 202, y: 118)
             
             // Progress arc
             Circle()
