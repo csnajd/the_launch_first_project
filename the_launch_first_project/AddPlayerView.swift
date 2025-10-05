@@ -6,7 +6,6 @@
 //
 
 // AddPlayerView.swift
-
 import SwiftUI
 
 struct AddPlayerView: View {
@@ -17,10 +16,6 @@ struct AddPlayerView: View {
 
     
     var body: some View {
-        ZStack {
-            Color.background
-                .ignoresSafeArea()
-        
         VStack {
             Text("أضف ٣ لاعبين على الأقل :")
                 .font(.MainText)
@@ -28,48 +23,42 @@ struct AddPlayerView: View {
                 .multilineTextAlignment(.center)
                 .padding(.top, 24)
 
-            ScrollViewReader { proxy in
-                ScrollView(.vertical, showsIndicators: true) {
-                    LazyVStack(spacing: 18) {
-                        ForEach(names.indices, id: \.self) { i in
-                            HStack(spacing: 12) {
-                                ZStack {
-                                    Image("yellowB")
-                                        .resizable()
-                                        .frame(width: 274, height: 40)
-
-                                    TextField("اسم", text: Binding(
-                                        get: { names[i] },
-                                        set: { names[i] = $0 }
-                                    ))
-                                    .multilineTextAlignment(.center)
-                                    .font(.PlayerText)
-                                    .foregroundColor(.black)
+            ScrollView {
+                LazyVStack(spacing: 18) {
+                    ForEach(names.indices, id: \.self) { i in
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Image("yellowB")
+                                    .resizable()
                                     .frame(width: 274, height: 40)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .center)
 
-                                Button {
-                                    if names.count > 3 {
-                                        names.remove(at: i)
-                                    }
-                                } label: {
-                                    Image("yellowC")
-                                        .resizable()
-                                        .frame(width: 44, height: 44)
-                                        .overlay {
-                                            Text("–")
-                                                .font(.system(size: 24, weight: .bold))
-                                                .foregroundColor(.black)
-                                                .padding(.top, 1)
-                                        }
-                                        .opacity(names.count > 3 ? 1 : 0.35)
-                                }
-                                .buttonStyle(.plain)
-                                .disabled(names.count <= 3)
+                                TextField("اسم", text: Binding(
+                                    get: { names[i] },
+                                    set: { names[i] = $0 }
+                                ))
+                                .multilineTextAlignment(.center)
+                                .font(.PlayerText)
+                                .foregroundColor(.black)
+                                .frame(width: 274, height: 40)
                             }
-                            .padding(.horizontal, 16)
-                            .id(i)
+
+                            Button {
+                                if names.count > 3 {
+                                    names.remove(at: i)
+                                }
+                            } label: {
+                                Image("yellowC")
+                                    .resizable()
+                                    .frame(width: 44, height: 44)
+                                    .overlay {
+                                        Text("–")
+                                            .font(.system(size: 24, weight: .bold))
+                                            .foregroundColor(.black)
+                                    }
+                                    .opacity(names.count > 3 ? 1 : 0.35)
+                            }
+                            .disabled(names.count <= 3)
+                            .buttonStyle(.plain)
                         }
 
                         Color.clear.frame(height: 160).id("BOTTOM")
@@ -85,10 +74,7 @@ struct AddPlayerView: View {
                 }
             }
 
-            Spacer()
-
             VStack(spacing: 12) {
-                // Add name button
                 Button {
                     names.append("")
                 } label: {
@@ -96,25 +82,9 @@ struct AddPlayerView: View {
                         Image("blueB")
                             .resizable()
                             .frame(width: 359, height: 60)
-                            .overlay(alignment: .leading) {
-                                ZStack {
-                                    Image("blueC")
-                                        .resizable()
-                                        .frame(width: 60, height: 60)
-                                        .padding()
-                                    Text("+")
-                                        .font(.system(size: 36, weight: .bold))
-                                        .foregroundColor(.white)
-                                        .offset(y: -4)
-                                }
-                                .offset(x: 283)
-                            }
-                            .overlay {
-                                Text("أضف اسم")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                                
-                            }
+                        Text("أضف اسم")
+                            .font(.PlayerText)
+                            .foregroundColor(.white)
                     }
                 }
                 .buttonStyle(.plain)
@@ -144,15 +114,16 @@ struct AddPlayerView: View {
             }
             .padding(.bottom)
         }
-        .padding(.horizontal, 8)
         .environment(\.layoutDirection, .rightToLeft)
         .navigationBarBackButtonHidden(true)
     }
 }
 }
 
-#Preview {
-    
-    AddPlayerView(navigationPath: .constant(NavigationPath()))
-        .environmentObject(PlayerManager()) //Mayar Add this !
+#if DEBUG
+struct AddPlayerView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddPlayerView()
+    }
 }
+#endif
