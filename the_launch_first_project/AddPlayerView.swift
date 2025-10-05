@@ -13,6 +13,10 @@ struct AddPlayerView: View {
     @State private var names: [String] = ["", "", ""]
 
     var body: some View {
+        ZStack {
+            Color.background
+                .ignoresSafeArea()
+        
         VStack {
             Text("أضف ٣ لاعبين على الأقل :")
                 .font(.MainText)
@@ -138,7 +142,7 @@ struct AddPlayerView: View {
         .navigationBarBackButtonHidden(true)
     }
 }
-
+}
 #Preview {
     AddPlayerView()
 }

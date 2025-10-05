@@ -7,11 +7,12 @@ struct RoleView: View {
     @State private var remainingPlayers: [String] = []
     @State private var currentPlayer: String? = nil
     @State private var showRolePage = false
-
+    
     var body: some View {
         ZStack {
-            Color.background.ignoresSafeArea()
-
+            Color.background
+                .ignoresSafeArea()
+            
             // Intro page for current player
             if let player = currentPlayer, !showRolePage {
                 VStack {
@@ -25,7 +26,7 @@ struct RoleView: View {
                             .padding(.horizontal)
                     }
                     .frame(maxHeight: .infinity)
-
+                    
                     Button(action: { showRolePage = true }) {
                         ZStack {
                             Image("purpleBS")
@@ -41,7 +42,7 @@ struct RoleView: View {
                 }
                 .padding()
             }
-
+            
             // Role page for current player
             if let player = currentPlayer, showRolePage {
                 VStack {
@@ -49,7 +50,7 @@ struct RoleView: View {
                         Text(player)
                             .font(.PlayerNameText)
                             .bold()
-
+                        
                         if let role = assignedRoles[player] {
                             let details = roleDetails(for: role)
                             Image(details.image)
@@ -57,12 +58,12 @@ struct RoleView: View {
                                 .scaledToFit()
                                 .frame(height: 280)
                                 .clipped()
-
+                            
                             // role title (optional)
                             Text(role)
                                 .font(.PlayerText)
                                 .bold()
-
+                            
                             // instructions (fixed text per role)
                             Text(details.instructions)
                                 .font(.PlayerText)
@@ -71,7 +72,7 @@ struct RoleView: View {
                         }
                     }
                     .frame(maxHeight: .infinity)
-
+                    
                     Button(action: {
                         // move to next player
                         showRolePage = false
@@ -111,14 +112,14 @@ struct RoleView: View {
             }
         }
     }
-
+    
     // assign roles such that there's one 'ولد' and one 'عجوز' and rest 'بنت'
     func assignUniqueRoles() {
         assignedRoles.removeAll()
-
+        
         var shuffledPlayers = playerNames.shuffled()
         var availableRoles: [String] = []
-
+        
         // ensure one boy and one old if possible
         if shuffledPlayers.count >= 2 {
             availableRoles.append("ولد")
@@ -126,16 +127,16 @@ struct RoleView: View {
         } else if shuffledPlayers.count == 1 {
             availableRoles.append("بنت") // if only one player, give 'بنت' (or choose preferred default)
         }
-
+        
         // fill remaining slots with girls
         let remainingCount = shuffledPlayers.count - availableRoles.count
         if remainingCount > 0 {
             availableRoles.append(contentsOf: Array(repeating: "بنت", count: remainingCount))
         }
-
+        
         // shuffle roles to randomize which player gets which specific role
         availableRoles.shuffle()
-
+        
         for (index, player) in shuffledPlayers.enumerated() {
             if index < availableRoles.count {
                 assignedRoles[player] = availableRoles[index]
@@ -144,7 +145,7 @@ struct RoleView: View {
             }
         }
     }
-
+    
     // single switch returns both image name and fixed instruction text
     func roleDetails(for role: String) -> (image: String, instructions: String) {
         switch role {
@@ -158,8 +159,13 @@ struct RoleView: View {
             return ("imBoy", "دورك غير معروف")
         }
     }
-}
-
-#Preview {
-    RoleView(playerNames: ["A", "B", "C", "D"])
+    
+    
+#if DEBUG
+    struct RoleView_Previews: PreviewProvider {
+        static var previews: some View {
+            RoleView(playerNames: ["A", "B", "C", "D"])
+        }
+    }
+#endif
 }

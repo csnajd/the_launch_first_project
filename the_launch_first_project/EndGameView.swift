@@ -10,10 +10,15 @@ import SwiftUI
 struct EndGameView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var timerManager: TimerManager
+    @Binding var navigationPath: NavigationPath
     
     var body: some View {
+        ZStack {
+            Color.background
+                .ignoresSafeArea()
+        
+        
         VStack {
-            
             Text("انتهت الجولة")
                 .font(.MainText)
                 .foregroundColor(.black)
@@ -24,9 +29,7 @@ struct EndGameView: View {
             
             Button(action: {
                 timerManager.reset()
-                dismiss()
-                
-                print("كمل جولة ثانية")
+                navigationPath.append("RoleView")
             }) {
                 ZStack {
                     Image("blueB")
@@ -39,35 +42,37 @@ struct EndGameView: View {
                         .foregroundColor(.white)
                 }
             }
+            .padding(.bottom, 5)
+
             
             Button(action: {
-                print("تغيير اللاعبين")
+                navigationPath.append("AddPlayerView")
             }) {
-                NavigationLink(destination: AddPlayerView()) {
-                    ZStack {
-                        Image("purpleBL")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 359, height: 59)
-                        
-                        Text("تغيير اللاعبين")
-                            .font(.PlayerText)
-                            .foregroundColor(.white)
-                    }
+                ZStack {
+                    Image("purpleBL")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 359, height: 59)
+                    
+                    Text("تغيير اللاعبين")
+                        .font(.PlayerText)
+                        .foregroundColor(.white)
                 }
             }
-            .transition(.opacity)
-            .padding(.bottom, 155)
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                timerManager.stopAlarm()
-            }
+        }
+        .padding(.bottom, 40)
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            timerManager.stopAlarm()
         }
     }
 }
-    
+}
 struct EndGameView_Previews: PreviewProvider {
     static var previews: some View {
-        EndGameView(timerManager: TimerManager())
+        EndGameView(
+            timerManager: TimerManager(),
+            navigationPath: .constant(NavigationPath())
+        )
     }
 }
