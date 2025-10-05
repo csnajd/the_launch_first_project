@@ -18,7 +18,7 @@ struct AddPlayerView: View {
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.top, 24)
-
+//test
             ScrollView {
                 LazyVStack(spacing: 18) {
                     ForEach(names.indices, id: \.self) { i in
