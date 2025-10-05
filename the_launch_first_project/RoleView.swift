@@ -7,84 +7,92 @@ struct RoleView: View {
     @State private var remainingPlayers: [String] = []
     @State private var currentPlayer: String? = nil
     @State private var showRolePage = false
+    @State private var navigateToTimer = false
 
     var body: some View {
-        ZStack {
-            Color.white
-                .ignoresSafeArea()
+        NavigationStack {
+            ZStack {
+                Color.white
+                    .ignoresSafeArea()
 
-            // صفحة تقديم اللاعب
-            if let player = currentPlayer, !showRolePage {
-                VStack {
-                    Text(player)
-                        .font(.title)
-                        .bold()
-                    Text("لا تخلي احد غيرك يشوف")
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-
-                    Spacer()
-
-                    Button(action: { showRolePage = true }) {
-                        ZStack {
-                            Image("purpleBS")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 227, height: 55)
-                            Text("يلا")
-                                .font(.title2)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .padding(.bottom, 40)
-                }
-                .padding()
-            }
-
-            // صفحة الدور لكل لاعب
-            if let player = currentPlayer, showRolePage {
-                VStack {
-                    Text(player)
-                        .font(.title)
-                        .bold()
-
-                    if let role = assignedRoles[player] {
-                        let details = roleDetails(for: role)
-                        Image(details.image)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 280)
-
-                        Text(role)
-                            .font(.headline)
+                // صفحة تقديم اللاعب
+                if let player = currentPlayer, !showRolePage {
+                    VStack {
+                        Text(player)
+                            .font(.title)
                             .bold()
-
-                        Text(details.instructions)
+                        Text("لا تخلي احد غيرك يشوف")
                             .font(.body)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
+
+                        Spacer()
+
+                        Button(action: { showRolePage = true }) {
+                            ZStack {
+                                Image("purpleBS")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 227, height: 55)
+                                Text("يلا")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.bottom, 40)
                     }
+                    .padding()
+                }
 
-                    Spacer()
+                // صفحة الدور لكل لاعب
+                if let player = currentPlayer, showRolePage {
+                    VStack {
+                        Text(player)
+                            .font(.title)
+                            .bold()
 
-                    Button(action: nextPlayer) {
-                        ZStack {
-                            Image("purpleBS")
+                        if let role = assignedRoles[player] {
+                            let details = roleDetails(for: role)
+                            Image(details.image)
                                 .resizable()
                                 .scaledToFit()
-                                .frame(width: 227, height: 55)
-                            Text("يلا")
-                                .font(.title2)
-                                .foregroundColor(.white)
+                                .frame(height: 280)
+
+                            Text(role)
+                                .font(.headline)
+                                .bold()
+
+                            Text(details.instructions)
+                                .font(.body)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
                         }
+
+                        Spacer()
+
+                        Button(action: nextPlayer) {
+                            ZStack {
+                                Image("purpleBS")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 227, height: 55)
+                                Text("يلا")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.bottom, 40)
                     }
-                    .padding(.bottom, 40)
+                    .padding()
                 }
-                .padding()
+
+                // NavigationLink مخفي للانتقال للتايمر بعد آخر لاعب
+                NavigationLink(destination: TimerView(), isActive: $navigateToTimer) {
+                    EmptyView()
+                }
             }
+            .onAppear(perform: startGame)
         }
-        .onAppear(perform: startGame)
     }
 
     // بدء اللعبة
@@ -101,6 +109,7 @@ struct RoleView: View {
             showRolePage = false
         } else {
             currentPlayer = nil
+            navigateToTimer = true
         }
     }
 
