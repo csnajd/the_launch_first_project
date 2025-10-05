@@ -15,6 +15,7 @@ struct TimerView: View {
         NavigationStack(path: $navigationPath) {
             VStack(spacing: 40) {
                 
+// Game over !
                 
                 if timerManager.alarmPlaying {
                    
@@ -41,12 +42,15 @@ struct TimerView: View {
                     
                    
                 } else if timerManager.isRunning || timerManager.isPaused {
+                   
                     // Running Timer View
                     AnimatedClockView(
                         timeRemaining: timerManager.timeRemaining,
                         totalTime: timerManager.totalTime,
                         isRunning: timerManager.isRunning
                     )
+                    
+                    
                     
                     // Control Buttons
                     HStack(spacing: 20) {
@@ -102,6 +106,11 @@ struct TimerView: View {
                     }
                     .padding(.bottom, 40)
                     
+                    
+                    
+                    
+// Time to play !!
+                    
                 } else {
                     // Setup View
                     VStack {
@@ -129,8 +138,8 @@ struct TimerView: View {
                             ZStack {
                                 Image("purpleBS")
                                     .resizable()
+                                    .scaledToFit()
                                     .frame(width: 277, height: 55)
-                                    .cornerRadius(10)
                                 
                                 Text("يلا")
                                     .font(.MainText)
@@ -157,7 +166,11 @@ struct TimerView: View {
     }
 }
 
-// حرك كل الـ structs الأخرى خارج الـ TimerView struct
+
+
+
+
+// ..
 struct TimePresetsView: View {
     @Binding var selectedTime: Double
     
@@ -196,6 +209,10 @@ struct TimePresetsView: View {
     }
 }
 
+
+
+//PresetButtonViwe
+
 struct PresetButton: View {
     let time: Double
     let label: String
@@ -213,6 +230,10 @@ struct PresetButton: View {
         .buttonStyle(.plain)
     }
 }
+
+
+
+//AnimatedClockViwe
 
 struct AnimatedClockView: View {
     let timeRemaining: Double
@@ -276,6 +297,9 @@ struct AnimatedClockView: View {
     }
 }
 
+
+//ClockMarkerViwe
+
 struct ClockMarker: View {
     let index: Int
     
@@ -288,6 +312,8 @@ struct ClockMarker: View {
             .rotationEffect(.degrees(Double(index) * 90))
     }
 }
+
+
 
 struct TimerView_Previews: PreviewProvider {
     static var previews: some View {

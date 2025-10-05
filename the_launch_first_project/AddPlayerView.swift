@@ -83,7 +83,7 @@ struct AddPlayerView: View {
                             ZStack {
                                 Image("blueB")
                                     .resizable()
-                                    .frame(width: 361, height: 60)
+                                    .frame(width: 359, height: 60)
                                     .overlay(alignment: .leading) {
                                         ZStack {
                                             Image("blueC")
@@ -95,7 +95,7 @@ struct AddPlayerView: View {
                                                 .foregroundColor(.white)
                                                 .offset(y: -4)
                                         }
-                                        .offset(x: 295)
+                                        .offset(x: 283)
                                     }
                                     .overlay {
                                         Text("أضف اسم")
@@ -112,7 +112,7 @@ struct AddPlayerView: View {
                             ZStack {
                                 Image("purpleBL")
                                     .resizable()
-                                    .frame(width: 361, height: 55)
+                                    .frame(width: 359, height: 60)
                                 Text("يلا ألعب !")
                                     .font(.PlayerText)
                                     .foregroundColor(.white)

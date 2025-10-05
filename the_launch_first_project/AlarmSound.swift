@@ -25,7 +25,7 @@ class AlarmSound: ObservableObject {
             audioPlayer?.numberOfLoops = -1
             audioPlayer?.play()
             
-            // Set up timer to stop alarm after specified duration
+
             stopTimer = Timer.scheduledTimer(withTimeInterval: duration, repeats: false) { [weak self] _ in
                 self?.stopAlarm()
                 self?.onAlarmFinished?()
@@ -33,7 +33,7 @@ class AlarmSound: ObservableObject {
             
         } catch {
             print("Error playing sound: \(error.localizedDescription)")
-            onAlarmFinished?() // Trigger navigation even if sound fails
+            onAlarmFinished?()
         }
     }
     

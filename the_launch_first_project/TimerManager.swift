@@ -26,6 +26,7 @@ class TimerManager: ObservableObject {
         return Int((1 - timeRemaining / totalTime) * 100)
     }
     
+    
     init() {
         alarmSound.onAlarmFinished = { [weak self] in
             DispatchQueue.main.async {
@@ -34,6 +35,7 @@ class TimerManager: ObservableObject {
             }
         }
     }
+    
     
     func start() {
          totalTime = selectedTime
@@ -46,6 +48,7 @@ class TimerManager: ObservableObject {
          startTimer()
      }
     
+    
     func togglePause() {
         isRunning.toggle()
         if isRunning {
@@ -55,6 +58,7 @@ class TimerManager: ObservableObject {
             isPaused = true
         }
     }
+    
     
     func reset() {
         timer?.invalidate()
@@ -68,10 +72,12 @@ class TimerManager: ObservableObject {
               alarmSound.stopAlarm()
     }
     
+    
     func adjustTime(by seconds: Double) {
         timeRemaining = max(0, min(totalTime + 60, timeRemaining + seconds))
         totalTime = max(totalTime, timeRemaining)
     }
+    
     
     private func startTimer() {
         timer?.invalidate()
@@ -86,13 +92,25 @@ class TimerManager: ObservableObject {
         }
     }
     
+    
     private func timerCompleted() {
         timer?.invalidate()
         isRunning = false
         timerEnded = true
-        alarmPlaying = true 
+        alarmPlaying = true
+        
+        alarmSound.onAlarmFinished = { [weak self] in
+            DispatchQueue.main.async {
+                self?.alarmPlaying = false
+                self?.shouldNavigateToEndGame = true
+                print("✅ Alarm finished - shouldNavigateToEndGame = true")
+            }
+        }
+        
         alarmSound.playAlarm(for: 7.0)
     }
+    
+    
     
     func stopAlarm() {
         alarmSound.stopAlarm()

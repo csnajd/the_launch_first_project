@@ -25,7 +25,7 @@ struct HomeView: View {
     
     var body: some View {
         VStack {
-            // LOGO - يبقى ظاهراً دائماً
+           
             Image("logo")
                 .resizable()
                 .scaledToFit()
@@ -36,7 +36,7 @@ struct HomeView: View {
                         logoOffset = -200
                     }
                     
-                    // إظهار الزر بعد انتهاء حركة اللوقو
+                    
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         withAnimation {
                             isButtonVisible = true
