@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct TimerView: View {
+    @EnvironmentObject var playerManager: PlayerManager  
     @StateObject private var timerManager = TimerManager()
     @State private var navigationPath = NavigationPath()
     
@@ -164,9 +165,13 @@ struct TimerView: View {
                     if destination == "EndGameView" {
                         EndGameView(timerManager: timerManager, navigationPath: $navigationPath)
                     } else if destination == "RoleView" {
-                        RoleView(playerNames: ["لاعب ١", "لاعب ٢", "لاعب ٣", "لاعب ٤"])
+                        RoleView(playerNames: ["لاعب ١", "لاعب ٢", "لاعب ٣", "لاعب ٤"], navigationPath: $navigationPath)
                     } else if destination == "AddPlayerView" {
-                        AddPlayerView()
+                        AddPlayerView(navigationPath: $navigationPath)  // عدل هذا
+                    } else if destination == "TimerView" {
+                        TimerView()
+                    } else if destination == "RoleViewWithNames" {
+                      
                     }
                 }
                 
@@ -322,10 +327,9 @@ struct TimerView: View {
     }
     
     
-    
+}
     struct TimerView_Previews: PreviewProvider {
         static var previews: some View {
             TimerView()
         }
     }
-}

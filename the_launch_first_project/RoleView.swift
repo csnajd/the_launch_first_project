@@ -3,6 +3,8 @@ import SwiftUI
 
 struct RoleView: View {
     let playerNames: [String]
+    @Binding var navigationPath: NavigationPath //Mayar Add this !
+    @EnvironmentObject var playerManager: PlayerManager //Mayar Add This !
     @State private var assignedRoles: [String: String] = [:]
     @State private var remainingPlayers: [String] = []
     @State private var currentPlayer: String? = nil
@@ -73,12 +75,16 @@ struct RoleView: View {
                     }
                     .frame(maxHeight: .infinity)
                     
+                    
+                    //Mayar Add This!
                     Button(action: {
-                        // move to next player
                         showRolePage = false
                         currentPlayer = nil
+                        
+                        // التحقق إذا كان هذا آخر لاعب
                         if remainingPlayers.isEmpty {
-                            // all players finished — يمكنك هنا العودة للصفحة الرئيسية أو فعل آخر
+                            // إذا كان آخر لاعب، اذهب لـ TimerView
+                            navigationPath.append("TimerView")
                         } else {
                             currentPlayer = remainingPlayers.first
                             remainingPlayers.removeFirst()
@@ -89,7 +95,7 @@ struct RoleView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 227, height: 55)
-                            Text("يلا")
+                            Text(remainingPlayers.isEmpty ? "ابدأ اللعبة" : "التالي")
                                 .font(.MainText)
                                 .foregroundColor(.white)
                         }
@@ -99,25 +105,27 @@ struct RoleView: View {
                 .padding()
             }
         }
+        //
         .onAppear {
-            // assign roles once when view appears
-            assignUniqueRoles()
-            if remainingPlayers.isEmpty && !playerNames.isEmpty {
-                remainingPlayers = playerNames
-            }
-            if currentPlayer == nil, let first = remainingPlayers.first {
-                currentPlayer = first
-                remainingPlayers.removeFirst()
-                showRolePage = false
-            }
-        }
-    }
+                   
+                   assignUniqueRoles()
+                   if remainingPlayers.isEmpty && !playerManager.playerNames.isEmpty {
+                       remainingPlayers = playerManager.playerNames
+                   }
+                   if currentPlayer == nil, let first = remainingPlayers.first {
+                       currentPlayer = first
+                       remainingPlayers.removeFirst()
+                       showRolePage = false
+                   }
+               }
+           }
+
     
     // assign roles such that there's one 'ولد' and one 'عجوز' and rest 'بنت'
     func assignUniqueRoles() {
         assignedRoles.removeAll()
         
-        var shuffledPlayers = playerNames.shuffled()
+        var shuffledPlayers = playerManager.playerNames.shuffled()
         var availableRoles: [String] = []
         
         // ensure one boy and one old if possible
@@ -160,12 +168,10 @@ struct RoleView: View {
         }
     }
     
-    
-#if DEBUG
-    struct RoleView_Previews: PreviewProvider {
-        static var previews: some View {
-            RoleView(playerNames: ["A", "B", "C", "D"])
-        }
-    }
-#endif
 }
+
+    #Preview {
+        RoleView(playerNames: ["A", "B", "C", "D"], navigationPath: .constant(NavigationPath()))
+            .environmentObject(PlayerManager()) //Mayar Add this !
+
+    }

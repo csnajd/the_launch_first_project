@@ -8,10 +8,13 @@
 import SwiftUI
 
 @main
-struct the_launch_first_projectApp: App {
+struct YourApp: App {
+    @StateObject var playerManager = PlayerManager()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(playerManager)
         }
     }
 }

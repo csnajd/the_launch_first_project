@@ -11,7 +11,11 @@ import SwiftUI
 
 struct AddPlayerView: View {
     @State private var names: [String] = ["", "", ""]
+    @Binding var navigationPath: NavigationPath //Mayar Add This !
+    @EnvironmentObject var playerManager: PlayerManager //Mayar Add This !
+    @State private var playerName = "" //Mayar Add this !
 
+    
     var body: some View {
         ZStack {
             Color.background
@@ -73,10 +77,10 @@ struct AddPlayerView: View {
                     .padding(.top, 8)
                 }
                 .frame(maxWidth: .infinity)
-                .onChange(of: names.count) { newCount in
+                .onChange(of: names.count) { _, newCount in
                     // Scroll to bottom when a new field is added
                     withAnimation(.easeInOut) {
-                        proxy.scrollTo(names.count - 1, anchor: .bottom)
+                        proxy.scrollTo(newCount - 1, anchor: .bottom)
                     }
                 }
             }
@@ -109,21 +113,24 @@ struct AddPlayerView: View {
                                 Text("أضف اسم")
                                     .font(.PlayerText)
                                     .foregroundColor(.white)
+                                
                             }
                     }
                 }
                 .buttonStyle(.plain)
 
-                // NavigationLink that builds RoleView using the latest filtered names (built on tap)
-                NavigationLink(
-                    destination: RoleView(
-                        playerNames:
-                            names
-                                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                                .filter { !$0.isEmpty }
-                    )
-                ) {
-                    ZStack {
+                Button {
+                                        let validNames = names
+                                            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                                            .filter { !$0.isEmpty }
+                                        
+                    //Mayar Add this !
+                    if validNames.count >= 3 {
+                        playerManager.setPlayerNames(validNames)
+                        navigationPath.append("RoleView")
+                    }
+                                    } label: {
+                                        ZStack {
                         Image("purpleBL")
                             .resizable()
                             .frame(width: 359, height: 60)
@@ -143,6 +150,9 @@ struct AddPlayerView: View {
     }
 }
 }
+
 #Preview {
-    AddPlayerView()
+    
+    AddPlayerView(navigationPath: .constant(NavigationPath()))
+        .environmentObject(PlayerManager()) //Mayar Add this !
 }
