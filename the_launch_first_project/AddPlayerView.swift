@@ -63,7 +63,7 @@ struct AddPlayerView: View {
 
                             Color.clear.frame(height: 160).id("BOTTOM")
                         }
-                        .padding(.top, 4)
+                        .padding(.top, 8)
                     }
                 }
 
