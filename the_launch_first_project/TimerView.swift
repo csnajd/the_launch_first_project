@@ -8,9 +8,7 @@
 import SwiftUI
 
 struct TimerView: View {
-    @EnvironmentObject var playerManager: PlayerManager  
     @StateObject private var timerManager = TimerManager()
-    @State private var navigationPath = NavigationPath()
     
     var body: some View {
         ZStack {
@@ -266,12 +264,29 @@ struct TimerView: View {
                     .frame(width: 150, height: 150)
                     .position(x: 202, y: 118)
                 
-                // Progress arc
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(
-                        .yyellow,
-                        style: StrokeStyle(lineWidth: 10, lineCap: .round)
+                // عرض عند انتهاء الوقت
+                if timerManager.alarmPlaying {
+                    VStack(spacing: 30) {
+                        HStack {
+                            Image(systemName:"exclamationmark")
+                                .font(.title)
+                                .foregroundColor(.purple)
+                            Text("خلص الوقت")
+                                .font(.title)
+                                .foregroundColor(.purple)
+                        }
+                        Image(systemName: "bell.fill")
+                            .font(.largeTitle)
+                            .foregroundColor(.yellow)
+                    }
+                    .padding()
+                    
+                // عرض المؤقت أثناء التشغيل أو التوقف المؤقت
+                } else if timerManager.isRunning || timerManager.isPaused {
+                    AnimatedClockView(
+                        timeRemaining: timerManager.timeRemaining,
+                        totalTime: timerManager.totalTime,
+                        isRunning: timerManager.isRunning
                     )
                     .frame(width: 260, height: 260)
                     .rotationEffect(.degrees(-90))
