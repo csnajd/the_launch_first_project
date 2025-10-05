@@ -6,96 +6,80 @@ struct RoleView: View {
     @State private var remainingPlayers: [String] = []
     @State private var currentPlayer: String? = nil
     @State private var showRolePage = false
-    
-    private let roles = ["ولد", "بنت", "عجوز"]
-    var onComplete: (() -> Void)?
-    
-    init(playerNames: [String], onComplete: (() -> Void)? = nil) {
-        self.playerNames = playerNames
-        self._remainingPlayers = State(initialValue: playerNames)
-        self.onComplete = onComplete
-    }
-    
+
     var body: some View {
         ZStack {
-            // Player's Intro Page
-            if let player = currentPlayer, let role = assignedRoles[player], !showRolePage {
+            // صفحة تقديم اللاعب
+            if let player = currentPlayer, !showRolePage {
                 VStack {
-                    // Top section - Name and text
                     VStack(spacing: 20) {
                         Text(player)
                             .font(.PlayerNameText)
                             .bold()
-                        
                         Text("لا تخلي احد غيرك يشوف")
                             .font(.PlayerText)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                     }
                     .frame(maxHeight: .infinity)
-                    
-                    // Bottom section - Button
-                    Button(action: {
-                        showRolePage = true
-                    }) {
-                        ZStack{
+
+                    Button(action: { showRolePage = true }) {
+                        ZStack {
                             Image("purpleBS")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 227, height: 55)
-                            
                             Text("يلا")
                                 .font(.MainText)
                                 .foregroundColor(.white)
-                        }                    }
+                        }
+                    }
                     .padding(.bottom, 40)
                 }
                 .padding()
             }
-            
-            // Role Page
-            if let player = currentPlayer, let role = assignedRoles[player], showRolePage {
+
+            // صفحة الدور لكل لاعب
+            if let player = currentPlayer, showRolePage {
                 VStack {
-                    // Top section - Name, image and instructions
                     VStack(spacing: 20) {
                         Text(player)
                             .font(.PlayerNameText)
                             .bold()
-                        
-                        Image(imageName(for: role))
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 280)
-                        
-                        Text(instructions(for: role))
-                            .font(.PlayerText)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                        if let role = assignedRoles[player] {
+                            let details = roleDetails(for: role)
+                            Image(details.image)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 280)
+                            Text(details.instructions)
+                                .font(.PlayerText)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
+                        }
                     }
                     .frame(maxHeight: .infinity)
-                    
-                    // Bottom section - Button
+
                     Button(action: {
                         showRolePage = false
                         currentPlayer = nil
                         if remainingPlayers.isEmpty {
-                            onComplete?()
-                        } else {
-                            if let nextPlayer = remainingPlayers.first {
-                                currentPlayer = nextPlayer
-                                remainingPlayers.removeFirst()
-                            }
+                            // الانتقال إلى الصفحة التالية هنا
                         }
-                    }) { ZStack{
-                        Image("purpleBS")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 227, height: 55)
-                        
-                        Text("يلا")
-                            .font(.MainText)
-                            .foregroundColor(.white)
-                    }
+                        else {
+                            currentPlayer = remainingPlayers.first
+                            remainingPlayers.removeFirst()
+                        }
+                    }) {
+                        ZStack {
+                            Image("purpleBS")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 227, height: 55)
+                            Text("يلا")
+                                .font(.MainText)
+                                .foregroundColor(.white)
+                        }
                     }
                     .padding(.bottom, 40)
                 }
@@ -103,11 +87,10 @@ struct RoleView: View {
             }
         }
         .onAppear {
-            assignRandomRoles()
+            assignUniqueRoles() // استخدام الدالة الجديدة
             if remainingPlayers.isEmpty && !playerNames.isEmpty {
                 remainingPlayers = playerNames
             }
-            // Start with first player's intro page immediately
             if currentPlayer == nil, let firstPlayer = remainingPlayers.first {
                 currentPlayer = firstPlayer
                 remainingPlayers.removeFirst()
@@ -115,53 +98,59 @@ struct RoleView: View {
             }
         }
     }
-    
-    func assignRandomRoles() {
-        var availableRoles = roles
-        var shuffledPlayers = playerNames.shuffled()
-        
+
+    // الدالة الصحيحة: تضمن أن كل دور يظهر مرة واحدة فقط
+    func assignUniqueRoles() {
         assignedRoles.removeAll()
         
-        for player in shuffledPlayers {
-            if availableRoles.isEmpty {
-                availableRoles = roles
-            }
-            if let randomRole = availableRoles.randomElement() {
-                assignedRoles[player] = randomRole
-                if let index = availableRoles.firstIndex(of: randomRole) {
-                    availableRoles.remove(at: index)
-                }
+        var shuffledPlayers = playerNames.shuffled()
+        var availableRoles: [String] = []
+        
+        // إضافة الأدوار الأساسية (واحد من كل نوع)
+        availableRoles.append("ولد")
+        availableRoles.append("عجوز")
+        
+        // إضافة الباقي كبنات
+        let remainingCount = shuffledPlayers.count - 2
+        if remainingCount > 0 {
+            availableRoles.append(contentsOf: Array(repeating: "بنت", count: remainingCount))
+        }
+        
+        // خلط الأدوار
+        availableRoles.shuffle()
+        
+        // توزيع الأدوار على اللاعبين
+        for (index, player) in shuffledPlayers.enumerated() {
+            if index < availableRoles.count {
+                assignedRoles[player] = availableRoles[index]
+            } else {
+                // في حال وجود لاعبين أكثر من المتوقع
+                assignedRoles[player] = "بنت"
             }
         }
-    }
-    
-    func imageName(for role: String) -> String {
-        switch role {
-        case "ولد":
-            return "imBoy"
-        case "بنت":
-            return "imGirl"
-        case "عجوز":
-            return "imOld"
-        default:
-            return "imBoy"
+        
+        // طباعة للتأكد (للتデバッグ)
+        print("الأدوار الموزعة:")
+        for (player, role) in assignedRoles {
+            print("\(player): \(role)")
         }
     }
-    
-    func instructions(for role: String) -> String {
+
+    // دالة واحدة تربط الدور بالصورة والنص الثابت
+    func roleDetails(for role: String) -> (image: String, instructions: String) {
         switch role {
         case "ولد":
-            return "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!"
+            return ("imBoy", "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!")
         case "بنت":
-            return "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!"
+            return ("imGirl", "لازم تنتبهين للولد لما يخطيك وتعلنين خطبتك!")
         case "عجوز":
-            return "لازم تنتبهين للولد لما يخطيك وتعلنين خطبتك!"
+            return ("imOld", "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!")
         default:
-            return "دورك غير معروف"
+            return ("imBoy", "دورك غير معروف")
         }
     }
 }
 
 #Preview {
-    RoleView(playerNames: ["Player1", "Player2", "Player3"])
+    RoleView(playerNames: ["Player1", "Player2", "Player3", "Player4"])
 }

@@ -23,7 +23,6 @@ struct AddPlayerView: View {
                         LazyVStack(spacing: 18) {
                             ForEach(names.indices, id: \.self) { i in
                                 HStack(spacing: 12) {
-                                    // خانة الاسم
                                     ZStack {
                                         Image("yellowB")
                                             .resizable()
