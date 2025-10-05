@@ -1,3 +1,4 @@
+// RoleView.swift
 import SwiftUI
 
 struct RoleView: View {
@@ -9,7 +10,9 @@ struct RoleView: View {
 
     var body: some View {
         ZStack {
-            // صفحة تقديم اللاعب
+            Color.background.ignoresSafeArea()
+
+            // Intro page for current player
             if let player = currentPlayer, !showRolePage {
                 VStack {
                     VStack(spacing: 20) {
@@ -39,19 +42,28 @@ struct RoleView: View {
                 .padding()
             }
 
-            // صفحة الدور لكل لاعب
+            // Role page for current player
             if let player = currentPlayer, showRolePage {
                 VStack {
                     VStack(spacing: 20) {
                         Text(player)
                             .font(.PlayerNameText)
                             .bold()
+
                         if let role = assignedRoles[player] {
                             let details = roleDetails(for: role)
                             Image(details.image)
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 280)
+                                .clipped()
+
+                            // role title (optional)
+                            Text(role)
+                                .font(.PlayerText)
+                                .bold()
+
+                            // instructions (fixed text per role)
                             Text(details.instructions)
                                 .font(.PlayerText)
                                 .multilineTextAlignment(.center)
@@ -61,12 +73,12 @@ struct RoleView: View {
                     .frame(maxHeight: .infinity)
 
                     Button(action: {
+                        // move to next player
                         showRolePage = false
                         currentPlayer = nil
                         if remainingPlayers.isEmpty {
-                            // الانتقال إلى الصفحة التالية هنا
-                        }
-                        else {
+                            // all players finished — يمكنك هنا العودة للصفحة الرئيسية أو فعل آخر
+                        } else {
                             currentPlayer = remainingPlayers.first
                             remainingPlayers.removeFirst()
                         }
@@ -87,64 +99,61 @@ struct RoleView: View {
             }
         }
         .onAppear {
-            assignUniqueRoles() // استخدام الدالة الجديدة
+            // assign roles once when view appears
+            assignUniqueRoles()
             if remainingPlayers.isEmpty && !playerNames.isEmpty {
                 remainingPlayers = playerNames
             }
-            if currentPlayer == nil, let firstPlayer = remainingPlayers.first {
-                currentPlayer = firstPlayer
+            if currentPlayer == nil, let first = remainingPlayers.first {
+                currentPlayer = first
                 remainingPlayers.removeFirst()
                 showRolePage = false
             }
         }
     }
 
-    // الدالة الصحيحة: تضمن أن كل دور يظهر مرة واحدة فقط
+    // assign roles such that there's one 'ولد' and one 'عجوز' and rest 'بنت'
     func assignUniqueRoles() {
         assignedRoles.removeAll()
-        
+
         var shuffledPlayers = playerNames.shuffled()
         var availableRoles: [String] = []
-        
-        // إضافة الأدوار الأساسية (واحد من كل نوع)
-        availableRoles.append("ولد")
-        availableRoles.append("عجوز")
-        
-        // إضافة الباقي كبنات
-        let remainingCount = shuffledPlayers.count - 2
+
+        // ensure one boy and one old if possible
+        if shuffledPlayers.count >= 2 {
+            availableRoles.append("ولد")
+            availableRoles.append("عجوز")
+        } else if shuffledPlayers.count == 1 {
+            availableRoles.append("بنت") // if only one player, give 'بنت' (or choose preferred default)
+        }
+
+        // fill remaining slots with girls
+        let remainingCount = shuffledPlayers.count - availableRoles.count
         if remainingCount > 0 {
             availableRoles.append(contentsOf: Array(repeating: "بنت", count: remainingCount))
         }
-        
-        // خلط الأدوار
+
+        // shuffle roles to randomize which player gets which specific role
         availableRoles.shuffle()
-        
-        // توزيع الأدوار على اللاعبين
+
         for (index, player) in shuffledPlayers.enumerated() {
             if index < availableRoles.count {
                 assignedRoles[player] = availableRoles[index]
             } else {
-                // في حال وجود لاعبين أكثر من المتوقع
                 assignedRoles[player] = "بنت"
             }
         }
-        
-        // طباعة للتأكد (للتデバッグ)
-        print("الأدوار الموزعة:")
-        for (player, role) in assignedRoles {
-            print("\(player): \(role)")
-        }
     }
 
-    // دالة واحدة تربط الدور بالصورة والنص الثابت
+    // single switch returns both image name and fixed instruction text
     func roleDetails(for role: String) -> (image: String, instructions: String) {
         switch role {
         case "ولد":
-            return ("imBoy", "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!")
+            return ("imBoy", "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!")
         case "بنت":
-            return ("imGirl", "لازم تنتبهين للولد لما يخطيك وتعلنين خطبتك!")
+            return ("imGirl", "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!")
         case "عجوز":
-            return ("imOld", "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!")
+            return ("imOld", "لازم تنتبهين للولد لما يخطيك وتعلنين خطبتك!")
         default:
             return ("imBoy", "دورك غير معروف")
         }
@@ -152,5 +161,5 @@ struct RoleView: View {
 }
 
 #Preview {
-    RoleView(playerNames: ["Player1", "Player2", "Player3", "Player4"])
+    RoleView(playerNames: ["A", "B", "C", "D"])
 }
