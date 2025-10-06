@@ -9,12 +9,10 @@ import SwiftUI
 
 @main
 struct YourApp: App {
-    @StateObject var playerManager = PlayerManager()
-    
+ 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(playerManager)
         }
     }
 }

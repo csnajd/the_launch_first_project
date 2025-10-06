@@ -117,3 +117,5 @@ class TimerManager: ObservableObject {
         alarmPlaying = false
     }
 }
+
+ 

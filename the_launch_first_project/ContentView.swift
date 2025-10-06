@@ -7,6 +7,18 @@
 
 import SwiftUI
 
+// Data types للـ Navigation
+struct TimerViewData: Hashable {
+    let playerNames: [String]
+}
+struct EndGameViewData: Hashable {
+    let playerNames: [String] 
+}
+
+struct RoleViewData: Hashable {
+    let playerNames: [String]
+}
+
 struct ContentView: View {
     var body: some View {
         NavigationStack {
@@ -15,9 +27,9 @@ struct ContentView: View {
                     .ignoresSafeArea()
                 HomeView()
             }
-        }}
+        }
+    }
 }
-
 
 struct HomeView: View {
     @State private var logoOffset: CGFloat = 0
@@ -25,6 +37,7 @@ struct HomeView: View {
     @State private var navigationPath = NavigationPath()
     
     var body: some View {
+        NavigationStack(path: $navigationPath) {
             VStack {
                 Image("logo")
                     .resizable()
@@ -47,7 +60,7 @@ struct HomeView: View {
                 
                 if isButtonVisible {
                     NavigationLink(destination: AddPlayerView(navigationPath: $navigationPath)) {
-                        ZStack{
+                        ZStack {
                             Image("purpleBS")
                                 .resizable()
                                 .scaledToFit()
@@ -58,16 +71,34 @@ struct HomeView: View {
                         }
                     }
                     .transition(.move(edge: .bottom))
-                    .padding(.bottom, 179)
+                    .padding(.bottom, 60)
+                }
+            }
+             .navigationDestination(for: TimerViewData.self) { data in
+                TimerView(navigationPath: $navigationPath, playerNames: data.playerNames)
+            }
+            .navigationDestination(for: EndGameViewData.self) { data in
+                EndGameView(
+                    timerManager: TimerManager(),
+                    navigationPath: $navigationPath,
+                    playerNames: data.playerNames
+                )
+            }
+            .navigationDestination(for: RoleViewData.self) { data in
+                RoleView(
+                    playerNames: data.playerNames,
+                    navigationPath: $navigationPath
+                )
+            }
+            .navigationDestination(for: String.self) { destination in
+                if destination == "AddPlayerView" {
+                    AddPlayerView(navigationPath: $navigationPath)
                 }
             }
         }
-   
-    
+    }
 }
 
 #Preview {
     ContentView()
-        .environmentObject(PlayerManager()) // أضيفي هذا السطر
-
- }
+}
