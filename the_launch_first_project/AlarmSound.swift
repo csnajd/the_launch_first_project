@@ -12,7 +12,7 @@ class AlarmSound: ObservableObject {
     var audioPlayer: AVAudioPlayer?
     var stopTimer: Timer?
     var onAlarmFinished: (() -> Void)?
-    
+    @Published var isPlaying = false 
     func playAlarm(for duration: TimeInterval = 30.0) {
         guard let url = Bundle.main.url(forResource: "alarm", withExtension: "mp3") else {
             print("Unable to find alarm.mp3")

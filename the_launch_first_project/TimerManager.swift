@@ -103,7 +103,7 @@ class TimerManager: ObservableObject {
             DispatchQueue.main.async {
                 self?.alarmPlaying = false
                 self?.shouldNavigateToEndGame = true
-                print("✅ Alarm finished - shouldNavigateToEndGame = true")
+                print(" Alarm finished - shouldNavigateToEndGame = true")
             }
         }
         
@@ -115,6 +115,7 @@ class TimerManager: ObservableObject {
     func stopAlarm() {
         alarmSound.stopAlarm()
         alarmPlaying = false
+        shouldNavigateToEndGame = true
     }
 }
 

@@ -1,12 +1,4 @@
-//  AddPlayerView.swift
 
-//  the_launch_first_project
-
-//
-
-//  Created by najd aljarba on 06/04/1447 AH.
-
-//
 
 import SwiftUI
 
@@ -17,12 +9,12 @@ import SwiftUI
     struct GameData: Hashable {
         let playerNames: [String]
     }
-
+// هنا تعديل الكيبورد 
     var body: some View {
         ZStack {
             Color.background
-                .ignoresSafeArea()
-            
+                .ignoresSafeArea(.all, edges: .top)
+
             VStack {
                 Text("أضف ٣ لاعبين على الأقل :")
                     .font(.MainText)

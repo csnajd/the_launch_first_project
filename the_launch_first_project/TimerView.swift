@@ -28,28 +28,39 @@ struct TimerView: View {
                 
                 // Game over !
                 if timerManager.alarmPlaying {
-                    
+
                     VStack(spacing: 30) {
-                        
+
                         HStack {
                             Image(systemName:"exclamationmark")
                                 .font(.MainText)
                                 .foregroundColor(.ppurple)
-                            
-                            Text("خلص الوقت ")
-                                .multilineTextAlignment(.center)
+
+                            Text("خلص الوقت")
                                 .font(.MainText)
                                 .foregroundColor(.ppurple)
                         }
+
                         Image(systemName: "bell.fill")
                             .font(.PlayerNameText)
                             .foregroundColor(.yyellow)
-                        
+                        Button {
+                            timerManager.stopAlarm()
+                        } label: {
+                            ZStack {
+                                Image("purpleBS")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 220, height: 55)
+
+                                Text("إيقاف الصوت")
+                                    .font(.MainText)
+                                    .foregroundColor(.white)
+                            }
+                        }
                     }
-                    .padding()
- 
-                    
-                } else if timerManager.isRunning || timerManager.isPaused {
+                }
+else if timerManager.isRunning || timerManager.isPaused {
                     
                     // Running Timer View
                     AnimatedClockView(
