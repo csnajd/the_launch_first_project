@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 class TimerManager: ObservableObject {
-    @Published var selectedTime: Double = 132 // 2m 12s default
+    @Published var selectedTime: Double = 120  
     @Published var timeRemaining: Double = 0
     @Published var totalTime: Double = 0
     @Published var isRunning: Bool = false
@@ -20,13 +20,7 @@ class TimerManager: ObservableObject {
 
     private var timer: Timer?
     private var alarmSound = AlarmSound()
-    
-    var progressPercentage: Int {
-        guard totalTime > 0 else { return 0 }
-        return Int((1 - timeRemaining / totalTime) * 100)
-    }
-    
-    
+        
     init() {
         alarmSound.onAlarmFinished = { [weak self] in
             DispatchQueue.main.async {
@@ -38,8 +32,10 @@ class TimerManager: ObservableObject {
     
     
     func start() {
-         totalTime = selectedTime
-         timeRemaining = selectedTime
+         let clamped = min(selectedTime, 180)
+         selectedTime = clamped
+         totalTime = clamped
+         timeRemaining = clamped
          isRunning = true
          isPaused = false
          timerEnded = false
@@ -74,8 +70,9 @@ class TimerManager: ObservableObject {
     
     
     func adjustTime(by seconds: Double) {
-        timeRemaining = max(0, min(totalTime + 60, timeRemaining + seconds))
-        totalTime = max(totalTime, timeRemaining)
+        let newRemaining = max(0, min(180, timeRemaining + seconds))
+        timeRemaining = newRemaining
+        totalTime = min(180, max(totalTime, newRemaining))
     }
     
     
@@ -98,15 +95,6 @@ class TimerManager: ObservableObject {
         isRunning = false
         timerEnded = true
         alarmPlaying = true
-        
-        alarmSound.onAlarmFinished = { [weak self] in
-            DispatchQueue.main.async {
-                self?.alarmPlaying = false
-                self?.shouldNavigateToEndGame = true
-                print(" Alarm finished - shouldNavigateToEndGame = true")
-            }
-        }
-        
         alarmSound.playAlarm(for: 7.0)
     }
     

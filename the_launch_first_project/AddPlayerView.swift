@@ -1,27 +1,29 @@
-
+//  AddPlayerView.swift
+//  the_launch_first_project
+//
+//  Created by najd aljarba on 06/04/1447 AH.
+//
 
 import SwiftUI
-
   struct AddPlayerView: View {
     @State private var names: [String] = ["", "", ""]
     @Binding var navigationPath: NavigationPath
-    
-    struct GameData: Hashable {
-        let playerNames: [String]
-    }
-// هنا تعديل الكيبورد 
+
     var body: some View {
+
         ZStack {
             Color.background
-                .ignoresSafeArea(.all, edges: .top)
-
+                .ignoresSafeArea()
+                .ignoresSafeArea(.keyboard)
+            
             VStack {
+                Spacer().frame(height: 100)
+                
                 Text("أضف ٣ لاعبين على الأقل :")
                     .font(.MainText)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.center)
-                    .padding(.top, 24)
-                
+
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 18) {
@@ -31,7 +33,8 @@ import SwiftUI
                                         Image("yellowB")
                                             .resizable()
                                             .frame(width: 274, height: 40)
-                                        
+                   
+
                                         TextField("اسم", text: Binding(
                                             get: { names[i] },
                                             set: { names[i] = $0 }
@@ -41,7 +44,8 @@ import SwiftUI
                                         .foregroundColor(.black)
                                         .frame(width: 274, height: 40)
                                     }
-                                    
+                 
+
                                     Button {
                                         if names.count > 3 {
                                             names.remove(at: i)
@@ -74,10 +78,15 @@ import SwiftUI
                         }
                     }
                 }
-                
+
+            
                 Spacer()
+
                 
                 VStack(spacing: 12) {
+                    let trimmedNames = names
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                        .filter { !$0.isEmpty }
                     Button {
                         names.append("")
                     } label: {
@@ -94,9 +103,7 @@ import SwiftUI
                     
                     NavigationLink(
                         destination: RoleView(
-                            playerNames: names
-                                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                                .filter { !$0.isEmpty },
+                            playerNames: trimmedNames,
                             navigationPath: $navigationPath
                         )
                     ) {
@@ -109,20 +116,20 @@ import SwiftUI
                                 .foregroundColor(.white)
                         }
                     }
-                    .disabled(names.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }.count < 3)
+                    .disabled(trimmedNames.count < 3)
                     .buttonStyle(.plain)
                 }
                 .padding(.bottom, 60)
             }
             .padding(.horizontal, 8)
         }
+        .ignoresSafeArea(.keyboard)
         .environment(\.layoutDirection, .rightToLeft)
         .navigationBarBackButtonHidden(true)
-    }
+        .withHomeButton(navigationPath: $navigationPath)
+        .ignoresSafeArea(.keyboard)
+     }
 }
-
 #Preview {
     AddPlayerView(navigationPath: .constant(NavigationPath()))
 }
-
- 

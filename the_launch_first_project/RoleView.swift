@@ -4,9 +4,9 @@ import SwiftUI
 struct RoleView: View {
     let playerNames: [String]
     @Binding var navigationPath: NavigationPath
-    @State private var assignedRoles: [String: String] = [:]
-    @State private var remainingPlayers: [String] = []
-    @State private var currentPlayer: String? = nil
+    @State private var assignedRoles: [Int: String] = [:]
+    @State private var remainingPlayerIndices: [Int] = []
+    @State private var currentPlayerIndex: Int? = nil
     @State private var showRolePage = false
 
     var body: some View {
@@ -14,140 +14,138 @@ struct RoleView: View {
             Color.background
                 .ignoresSafeArea()
             
-            if let player = currentPlayer, !showRolePage {
-                // صفحة تقديم اللاعب - UI ثابت
-                VStack {
-                    Spacer()
-                    
-                    VStack(spacing: 30) {
-                        Text(player)
-                            .font(.PlayerNameText)
-                            .bold()
+            VStack {
+                Spacer().frame(height: 100)
+            
+                if let player = currentPlayerName, !showRolePage {
+                    VStack {
+                        Spacer()
                         
-                        Text("لا تخلي احد غيرك يشوف")
-                            .font(.PlayerText)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
-                    }
-                    
-                    Spacer()
-                    
-                     Button(action: { showRolePage = true }) {
-                        ZStack {
-                            Image("purpleBS")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 227, height: 55)
-                            Text("يلا")
-                                .font(.MainText)
-                                .foregroundColor(.white)
+                        VStack(spacing: 30) {
+                            Text(player)
+                                .font(.PlayerNameText)
+                                .bold()
+                            
+                            Text("لا تخلي أحد غيرك يشوف")
+                                .font(.PlayerText)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal)
                         }
-                    }
-                    .padding(.bottom, 60) // مسافة ثابتة من الأسفل
-                }
-                .padding()
-            }
-
-            // صفحة الدور لكل لاعب - UI ثابت
-            if let player = currentPlayer, showRolePage {
-                VStack {
-                    Spacer()
-                    
-                    VStack(spacing: 30) {
-                        Text(player)
-                            .font(.PlayerNameText)
-                            .bold()
-
-                        if let role = assignedRoles[player] {
-                            let details = roleDetails(for: role)
-                            
-                            Image(details.image)
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 250)
-                            
-                            VStack(spacing: 15) {
-                                Text(role)
-                                    .font(.PlayerText)
-                                    .bold()
-
-                                Text(details.instructions)
-                                    .font(.PlayerText)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal)
-                                    .fixedSize(horizontal: false, vertical: true) // نص ثابت
+                        
+                        Spacer()
+                        
+                        Button(action: { showRolePage = true }) {
+                            ZStack {
+                                Image("purpleBS")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 227, height: 55)
+                                Text("يلا")
+                                    .font(.MainText)
+                                    .foregroundColor(.white)
                             }
                         }
+                        .padding(.bottom, 60)
                     }
-                    
-                    Spacer()
-                    
-                     Button(action: nextPlayer) {
-                        ZStack {
-                            Image("purpleBS")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 227, height: 55)
-                            Text(remainingPlayers.isEmpty ? "ابدأ اللعبة" : "يلا")
-                                .font(.MainText)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .padding(.bottom, 60)  
+                    .padding(.horizontal)
                 }
-                .padding()
+
+                if let player = currentPlayerName, showRolePage {
+                    VStack {
+                        Spacer()
+                        
+                        VStack(spacing: 30) {
+                            Text(player)
+                                .font(.PlayerNameText)
+                                .bold()
+
+                            if let role = currentPlayerRole {
+                                let details = roleDetails(for: role)
+                                
+                                Image(details.image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 250)
+                                
+                                VStack(spacing: 15) {
+                                    Text(role)
+                                        .font(.PlayerText)
+                                        .bold()
+
+                                    Text(details.instructions)
+                                        .font(.PlayerText)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        Button(action: nextPlayer) {
+                            ZStack {
+                                Image("purpleBS")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 227, height: 55)
+                                Text(remainingPlayerIndices.isEmpty ? "ابدأ اللعبة" : "يلا")
+                                    .font(.MainText)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.bottom, 60)
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
         .navigationBarBackButtonHidden(true)
+        .withHomeButton(navigationPath: $navigationPath)
         .onAppear(perform: startGame)
     }
 
-    // بدء اللعبة
     private func startGame() {
         assignUniqueRoles()
-        remainingPlayers = playerNames.shuffled()
+        remainingPlayerIndices = Array(playerNames.indices).shuffled()
         nextPlayer()
     }
 
-    // الانتقال للاعب التالي
     private func nextPlayer() {
         showRolePage = false
         
-        if !remainingPlayers.isEmpty {
-            currentPlayer = remainingPlayers.removeFirst()
+        if !remainingPlayerIndices.isEmpty {
+            currentPlayerIndex = remainingPlayerIndices.removeFirst()
         } else {
-            // خلصنا كل اللاعبين - روح للتايمر
-            currentPlayer = nil
+            currentPlayerIndex = nil
             navigationPath.append(TimerViewData(playerNames: playerNames))
         }
     }
 
-    // توزيع الأدوار
     private func assignUniqueRoles() {
         assignedRoles.removeAll()
-        var shuffledPlayers = playerNames.shuffled()
+        var shuffledIndices = Array(playerNames.indices).shuffled()
         var roles: [String] = []
 
-        if shuffledPlayers.count >= 2 {
+        if shuffledIndices.count >= 2 {
             roles.append("ولد")
             roles.append("عجوز")
-        } else if shuffledPlayers.count == 1 {
+        } else if shuffledIndices.count == 1 {
             roles.append("بنت")
         }
 
-        let remainingCount = shuffledPlayers.count - roles.count
+        let remainingCount = shuffledIndices.count - roles.count
         if remainingCount > 0 {
             roles.append(contentsOf: Array(repeating: "بنت", count: remainingCount))
         }
 
         roles.shuffle()
 
-        for (index, player) in shuffledPlayers.enumerated() {
-            assignedRoles[player] = index < roles.count ? roles[index] : "بنت"
+        for (index, playerIndex) in shuffledIndices.enumerated() {
+            assignedRoles[playerIndex] = index < roles.count ? roles[index] : "بنت"
         }
     }
 
-    // ربط الدور بالصورة والتعليمات
     private func roleDetails(for role: String) -> (image: String, instructions: String) {
         switch role {
         case "ولد":
@@ -159,6 +157,16 @@ struct RoleView: View {
         default:
             return ("imBoy", "دورك غير معروف")
         }
+    }
+    
+    private var currentPlayerName: String? {
+        guard let index = currentPlayerIndex, playerNames.indices.contains(index) else { return nil }
+        return playerNames[index]
+    }
+    
+    private var currentPlayerRole: String? {
+        guard let index = currentPlayerIndex else { return nil }
+        return assignedRoles[index]
     }
 }
 

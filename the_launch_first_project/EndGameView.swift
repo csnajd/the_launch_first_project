@@ -12,7 +12,6 @@ struct EndGameView: View {
     @ObservedObject var timerManager: TimerManager
     @Binding var navigationPath: NavigationPath
     
-    // نحتاج بيانات اللاعبين عشان نرجع للرول فيو
     let playerNames: [String]
 
     var body: some View {
@@ -21,18 +20,17 @@ struct EndGameView: View {
                 .ignoresSafeArea()
 
             VStack {
+                Spacer().frame(height: 100)
+                
                 Text("انتهت الجولة")
                     .font(.MainText)
                     .foregroundColor(.black)
-                    .padding(.top, 60)
                 
                 Spacer()
 
-                // زر جولة ثانية - يودي لصفحة الرول
                 Button(action: {
                     timerManager.reset()
                     navigationPath.removeLast(navigationPath.count)
-                    // نرجع للرول فيو بنفس اللاعبين
                     let roleViewData = RoleViewData(playerNames: playerNames)
                     navigationPath.append(roleViewData)
                 }) {
@@ -48,7 +46,6 @@ struct EndGameView: View {
                 }
                 .padding(.bottom, 5)
 
-                // زر تغيير اللاعبين - يودي لصفحة الأد بلير
                 Button(action: {
                     navigationPath.removeLast(navigationPath.count)
                     navigationPath.append("AddPlayerView")
@@ -67,10 +64,11 @@ struct EndGameView: View {
             .padding(.bottom, 60)
             .padding(.horizontal, 8)
             .navigationBarBackButtonHidden(true)
-            .onAppear {
+             .onAppear {
                 timerManager.stopAlarm()
             }
         }
+        .withHomeButton(navigationPath: $navigationPath)
     }
 }
 
@@ -79,7 +77,7 @@ struct EndGameView_Previews: PreviewProvider {
         EndGameView(
             timerManager: TimerManager(),
             navigationPath: .constant(NavigationPath()),
-            playerNames: ["أحمد", "سارة", "منى", "خالد"] // أضيفي هذا
+            playerNames: ["أحمد", "سارة", "منى", "خالد"]  
         )
     }
 }

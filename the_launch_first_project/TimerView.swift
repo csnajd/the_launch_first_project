@@ -7,15 +7,8 @@
 
 import SwiftUI
 
-// Enum لتحديد وجهات الـ Navigation
-enum NavigationDestination: Hashable {
-    case endGame
-    case addPlayer
-    case roleView
-}
-
 struct TimerView: View {
-    @StateObject private var timerManager = TimerManager()
+    @ObservedObject var timerManager: TimerManager
     @Binding var navigationPath: NavigationPath
     let playerNames: [String]
     
@@ -23,221 +16,173 @@ struct TimerView: View {
         ZStack {
             Color.background
                 .ignoresSafeArea()
-        
-            VStack(spacing: 40) {
+            
+            VStack(spacing: 0) {
+                Spacer().frame(height: 100)
                 
-                // Game over !
-                if timerManager.alarmPlaying {
-
-                    VStack(spacing: 30) {
-
-                        HStack {
-                            Image(systemName:"exclamationmark")
+                VStack(spacing: 24) {
+                    if timerManager.alarmPlaying {
+                        VStack {
+                            Spacer().frame(height: 0)
+                            
+                            Text("انتهى الوقت!")
                                 .font(.MainText)
                                 .foregroundColor(.ppurple)
-
-                            Text("خلص الوقت")
-                                .font(.MainText)
-                                .foregroundColor(.ppurple)
+                            
+                            Spacer()
+                            
+                            Image(systemName: "bell.fill")
+                                .font(.system(size: 80))
+                                .foregroundColor(.yyellow)
+                            
+                            Spacer()
                         }
-
-                        Image(systemName: "bell.fill")
-                            .font(.PlayerNameText)
-                            .foregroundColor(.yyellow)
+                    } else if timerManager.isRunning || timerManager.isPaused {
+                        VStack(spacing: 20) {
+                            Spacer()
+                            
+                            AnimatedClockView(
+                                timeRemaining: timerManager.timeRemaining,
+                                totalTime: timerManager.totalTime,
+                                isRunning: timerManager.isRunning
+                            )
+                            
+                            Spacer()
+                        }
+                    } else {
+                        VStack {
+                            VStack(spacing: 8) {
+                                Text("وقت اللعب !!")
+                                    .font(.MainText)
+                                
+                                Text("اضغط يلا عشان يبدأ المؤقت")
+                                    .font(.PlayerText)
+                                    .multilineTextAlignment(.center)
+                            }
+                            
+                            Spacer()
+                            
+                            Image("Clock")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 220, height: 220)
+                            
+                            Spacer()
+                            
+                            TimePickerView(selectedTime: $timerManager.selectedTime)
+                                .frame(height: 100)
+                            
+                            Spacer()
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                if timerManager.alarmPlaying {
+                    Button {
+                        timerManager.stopAlarm()
+                    } label: {
+                        ZStack {
+                            Image("purpleBS")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 250, height: 60)
+                            Text("إيقاف الصوت")
+                                .font(.MainText)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 60)
+                } else if timerManager.isRunning || timerManager.isPaused {
+                    HStack(spacing: 20) {
+                        Button("-30s") { timerManager.adjustTime(by: -30) }
+                            .font(.title2).bold().foregroundColor(.ppurple)
+                        
                         Button {
-                            timerManager.stopAlarm()
+                            timerManager.togglePause()
                         } label: {
                             ZStack {
-                                Image("purpleBS")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 220, height: 55)
-
-                                Text("إيقاف الصوت")
-                                    .font(.MainText)
-                                    .foregroundColor(.white)
-                            }
-                        }
-                    }
-                }
-else if timerManager.isRunning || timerManager.isPaused {
-                    
-                    // Running Timer View
-                    AnimatedClockView(
-                        timeRemaining: timerManager.timeRemaining,
-                        totalTime: timerManager.totalTime,
-                        isRunning: timerManager.isRunning
-                    )
-                    
-                    // Control Buttons
-                    HStack(spacing: 20) {
-                        Button(action: {
-                            timerManager.adjustTime(by: -30)
-                        }) {
-                            Text("-")
-                                .font(.system(size: 40))
-                                .foregroundColor(.ppurple)
-                        }
-                        
-                        Button(action: {
-                            timerManager.togglePause()
-                        }) {
-                            ZStack {
                                 Image("yellowC")
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 60, height: 60)
-                                
+                                    .frame(width: 65, height: 65)
                                 Image(systemName: timerManager.isRunning ? "pause.fill" : "play.fill")
-                                    .font(.PlayerText)
-                                    .bold()
                                     .foregroundColor(.background)
-                                    .frame(width: 55, height: 55)
+                                    .font(.title)
                             }
                         }
                         
-                        Button(action: {
+                        Button {
                             timerManager.reset()
-                        }) {
+                        } label: {
                             ZStack {
                                 Image("yellowC")
                                     .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 60, height: 60)
-                                
+                                    .frame(width: 65, height: 65)
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.PlayerText)
-                                    .bold()
                                     .foregroundColor(.background)
-                                    .frame(width: 55, height: 55)
+                                    .font(.title2).bold()
                             }
                         }
                         
-                        Button(action: {
-                            timerManager.adjustTime(by: 30)
-                        }) {
-                            Text("+")
-                                .font(.system(size: 30))
-                                .foregroundColor(.ppurple)
-                        }
+                        Button("+30s") { timerManager.adjustTime(by: 30) }
+                            .font(.title2).bold().foregroundColor(.ppurple)
                     }
-                    .offset(y:85)
-
-                    
-                    // Time to play !!
-                    
+                    .padding(.bottom, 60)
                 } else {
-                     VStack {
-                        Text("وقت اللعب !!")
-                            .font(.MainText)
-                            .padding(.bottom)
-                        Text("اضغط يلا عشان يبدا المؤقت\n(يمديك تختار الوقت بس اكثر شي ٣ دقايق)")
-                            .multilineTextAlignment(.center)
-                            .font(.PlayerText)
-                            .padding(.bottom)
-                        
-                        Image("Clock")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200, height: 200)
-                            .padding(.bottom, 40)
-                    }
-                    
-                    VStack(spacing: 30) {
-                        TimePresetsView(selectedTime: $timerManager.selectedTime)
-                        
-                        Button(action: {
-                            timerManager.start()
-                        }) {
-                            ZStack {
-                                Image("purpleBS")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 277, height: 55)
-                                
-                                Text("يلا")
-                                    .font(.MainText)
-                                    .foregroundColor(.white)
-                            }
+                    Button {
+                        timerManager.start()
+                    } label: {
+                        ZStack {
+                            Image("purpleBS")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 277, height: 55)
+                            Text("يلا")
+                                .font(.MainText)
+                                .foregroundColor(.white)
                         }
-                        .padding(.bottom, 60)
                     }
+                    .padding(.bottom, 60)
                 }
             }
-            .padding(.top, 30)
-            .onChange(of: timerManager.shouldNavigateToEndGame) { oldValue, newValue in
-                if newValue {
-                    navigationPath.append(EndGameViewData(playerNames: playerNames))
-                }
-            }
-             
+            .padding(.horizontal, 16)
         }
         .navigationBarBackButtonHidden(true)
-
+        .withHomeButton(navigationPath: $navigationPath)
+        .onChange(of: timerManager.shouldNavigateToEndGame) { _, newValue in
+            if newValue {
+                navigationPath.append(EndGameViewData(playerNames: playerNames))
+            }
+        }
     }
 }
-    
-    
-// ..
-struct TimePresetsView: View {
+
+
+struct TimePickerView: View {
     @Binding var selectedTime: Double
-    
-    let presets: [(time: Double, label: String)] = [
-        (30, "30s"),
-        (60, "1m"),
-        (90, "1.5m"),
-        (120, "2m"),
-        (150, "2.5m"),
-        (180, "3m")
-    ]
-    
     var body: some View {
-        VStack {
-            Text("اختر الوقت")
-                .font(.PlayerText)
+        HStack {
+            Picker("Minutes", selection: Binding(
+                get: { Int(selectedTime) / 60 },
+                set: { selectedTime = Double($0 * 60 + (Int(selectedTime) % 60)) }
+            )) {
+                ForEach(0...3, id: \.self) { Text("\($0) د").tag($0) }
+            }
+            .pickerStyle(.wheel)
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 15),
-                GridItem(.flexible(), spacing: 15),
-                GridItem(.flexible(), spacing: 15)
-            ], spacing: 15) {
-                ForEach(presets, id: \.time) { preset in
-                    PresetButton(
-                        time: preset.time,
-                        label: preset.label,
-                        isSelected: selectedTime == preset.time,
-                        action: {
-                            selectedTime = preset.time
-                        }
-                    )
-                }
+            Picker("Seconds", selection: Binding(
+                get: { Int(selectedTime) % 60 },
+                set: { selectedTime = Double((Int(selectedTime) / 60) * 60 + $0) }
+            )) {
+                ForEach(0...59, id: \.self) { Text(String(format: "%02d ث", $0)).tag($0) }
             }
+            .pickerStyle(.wheel)
         }
-        .padding(.horizontal, 30)
     }
 }
 
-//PresetButtonViwe
-struct PresetButton: View {
-    let time: Double
-    let label: String
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            VStack {
-                Text(label)
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(isSelected ? .ppurple : .gray)
-            }
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-
-//AnimatedClockViwe
 struct AnimatedClockView: View {
     let timeRemaining: Double
     let totalTime: Double
@@ -250,80 +195,48 @@ struct AnimatedClockView: View {
     
     var body: some View {
         ZStack {
-            Image("timer")
-                .resizable()
-                .scaledToFit()
-                .frame(width: 150, height: 150)
-                .offset(x: 0, y: -153)
+         ZStack {
+                Image("timer")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 200, height: 200)
+                    .offset(y: -150)
+                }
             
-            // Progress arc
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(
-                    .yyellow,
-                    style: StrokeStyle(lineWidth: 10, lineCap: .round)
-                )
+                .stroke(Color.yyellow, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                 .frame(width: 260, height: 260)
                 .rotationEffect(.degrees(-90))
                 .animation(.linear(duration: 0.3), value: progress)
             
-            // Outer circles
             Circle()
                 .stroke(Color.ppurple, lineWidth: 13)
                 .frame(width: 280, height: 280)
             
-            // Clock markers
-            ForEach(0..<4) { index in
-                ClockMarker(index: index)
-            }
-            
-            // Time display
-            Text(formatTime(timeRemaining))
+            Text(String(format: "%d:%02d", Int(timeRemaining) / 60, Int(timeRemaining) % 60))
                 .font(.system(size: 52, weight: .bold))
-                .foregroundColor(timeColor)
+                .foregroundColor(progress > 0.9 ? .red : .ppurple)
         }
-    }
-    
-    var timeColor: Color {
-        let percentage = (timeRemaining / totalTime) * 100
-        if percentage <= 10 {
-            return Color.red
-        } else {
-            return Color.ppurple
-        }
-    }
-    
-    private func formatTime(_ seconds: Double) -> String {
-        let mins = Int(seconds) / 60
-        let secs = Int(seconds) % 60
-        return String(format: "%d:%02d", mins, secs)
-    }
-}
-
-//ClockMarkerViwe
-struct ClockMarker: View {
-    let index: Int
-    
-    var body: some View {
-        Rectangle()
-            .fill(.ppurple)
-            .frame(width: 8, height: 20)
-            .cornerRadius(4)
-            .offset(y: -140)
-            .rotationEffect(.degrees(Double(index) * 90))
     }
 }
 
 #Preview {
     struct PreviewWrapper: View {
         @State private var path = NavigationPath()
+        @StateObject private var timerManager = TimerManager()
         
         var body: some View {
             NavigationStack(path: $path) {
                 TimerView(
+                    timerManager: timerManager,
                     navigationPath: $path,
                     playerNames: ["أحمد", "سارة", "منى"]
                 )
+            }
+            .onAppear {
+                timerManager.isRunning = true
+                timerManager.timeRemaining = 120
             }
         }
     }
