@@ -94,8 +94,9 @@ import SwiftUI
                             Image("blueB")
                                 .resizable()
                                 .frame(width: 359, height: 60)
+                                .contentShape(Rectangle())
                             Text("أضف اسم")
-                                .font(.PlayerText)
+                                .font(.PlayerText).font(.system(.title3, design: .rounded))
                                 .foregroundColor(.white)
                         }
                     }
@@ -113,7 +114,7 @@ import SwiftUI
                                 .frame(width: 359, height: 60)
                             Text("يلا ألعب !")
                                 .font(.PlayerText)
-                                .foregroundColor(.white)
+                                .foregroundColor(.white).shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                         }
                     }
                     .disabled(trimmedNames.count < 3)

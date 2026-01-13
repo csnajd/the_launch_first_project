@@ -26,7 +26,7 @@ struct TimerView: View {
                             Spacer().frame(height: 0)
                             
                             Text("انتهى الوقت!")
-                                .font(.MainText)
+                                .font(.MainText).font(.system(.title, design: .rounded))
                                 .foregroundColor(.ppurple)
                             
                             Spacer()
@@ -53,7 +53,7 @@ struct TimerView: View {
                         VStack {
                             VStack(spacing: 8) {
                                 Text("وقت اللعب !!")
-                                    .font(.MainText)
+                                    .font(.MainText).font(.system(.title, design: .rounded))
                                 
                                 Text("اضغط يلا عشان يبدأ المؤقت")
                                     .font(.PlayerText)
@@ -80,6 +80,7 @@ struct TimerView: View {
                 Spacer()
                 
                 if timerManager.alarmPlaying {
+                    
                     Button {
                         timerManager.stopAlarm()
                     } label: {
@@ -98,7 +99,7 @@ struct TimerView: View {
                 } else if timerManager.isRunning || timerManager.isPaused {
                     HStack(spacing: 20) {
                         Button("-30s") { timerManager.adjustTime(by: -30) }
-                            .font(.title2).bold().foregroundColor(.ppurple)
+                            .font(.title2).bold().foregroundColor(.ppurple).contentShape(Rectangle())
                         
                         Button {
                             timerManager.togglePause()
