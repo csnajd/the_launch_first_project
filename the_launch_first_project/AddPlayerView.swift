@@ -23,6 +23,7 @@ import SwiftUI
                     .font(.MainText)
                     .foregroundColor(.black)
                     .multilineTextAlignment(.center)
+                    .accessibilityLabel("يَجِبُ إِضَافَةُ ثَلَاثَةِ لَاعِبِينَ عَلَى الْأَقَل")
 
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -33,7 +34,7 @@ import SwiftUI
                                         Image("yellowB")
                                             .resizable()
                                             .frame(width: 274, height: 40)
-                   
+                                            .accessibilityHidden(true)
 
                                         TextField("اسم", text: Binding(
                                             get: { names[i] },
@@ -43,6 +44,7 @@ import SwiftUI
                                         .font(.PlayerText)
                                         .foregroundColor(.black)
                                         .frame(width: 274, height: 40)
+                                        .accessibilityLabel("اِكْتُبِ اسْمَ اللَّاعِب")
                                     }
                  
 
@@ -54,16 +56,21 @@ import SwiftUI
                                         Image("yellowC")
                                             .resizable()
                                             .frame(width: 44, height: 44)
+                                            .accessibilityHidden(true)
                                             .overlay {
                                                 Text("–")
                                                     .font(.system(size: 24, weight: .bold))
                                                     .foregroundColor(.black)
+                                                    .accessibilityHidden(true)
                                             }
                                             .opacity(names.count > 3 ? 1 : 0.35)
                                     }
+                                    .accessibilityLabel("حَذْفُ اللَّاعِب")
+                                    .accessibilityAddTraits(.isButton)
                                     .disabled(names.count <= 3)
                                     .buttonStyle(.plain)
                                 }
+                                .accessibilityElement(children: .combine)
                                 .id(i)
                             }
                             
@@ -115,9 +122,20 @@ import SwiftUI
                                 .font(.PlayerText)
                                 .foregroundColor(.white)
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("اِبْدَأِ اللَّعِب")
+                        .accessibilityAddTraits(.isButton)
                     }
                     .disabled(trimmedNames.count < 3)
                     .buttonStyle(.plain)
+                    .simultaneousGesture(
+                        TapGesture().onEnded {
+                            if trimmedNames.count >= 3 {
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                                impactGenerator.impactOccurred()
+                            }
+                        }
+                    )
                 }
                 .padding(.bottom, 60)
             }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct TimerViewData: Hashable {
     let playerNames: [String]
@@ -22,6 +23,8 @@ extension View {
     func withHomeButton(navigationPath: Binding<NavigationPath>) -> some View {
         self.overlay(alignment: .topLeading) {
             Button(action: {
+                let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                impactGenerator.impactOccurred()
                 navigationPath.wrappedValue = NavigationPath()
             }) {
                 ZStack {
@@ -35,6 +38,10 @@ extension View {
                         .foregroundColor(.background)
                 }
             }
+            .accessibilityLabel("العودة للرئيسية")
+            .accessibilityHint("يعيدك إلى شاشة البداية")
+            .accessibilityAddTraits(.isButton)
+            .accessibilitySortPriority(-1)
             .padding(.top, 30)
             .padding(.leading, 20)
             .buttonStyle(PlainButtonStyle())
@@ -88,6 +95,7 @@ struct ContentView: View {
 struct HomeView: View {
     @Binding var navigationPath: NavigationPath
     @State private var isButtonVisible = false
+    @Environment(\.accessibilityEnabled) var isVoiceOverOn
     
     var body: some View {
             ZStack {
@@ -101,8 +109,13 @@ struct HomeView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 450, height: 450)
+                            .accessibilityLabel("لُوقُو قَفْطَتَك")
                             .onAppear {
+                                let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
+                                hapticGenerator.prepare()
+                                
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    hapticGenerator.impactOccurred()
                                     withAnimation {
                                         isButtonVisible = true
                                     }
@@ -123,8 +136,15 @@ struct HomeView: View {
                                     .foregroundColor(.white)
                             }
                         }
+                        .accessibilityLabel("بدء اللعبة")
                         .transition(.move(edge: .bottom))
                         .padding(.bottom, 60)
+                        .simultaneousGesture(
+                            TapGesture().onEnded {
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                                impactGenerator.impactOccurred()
+                            }
+                        )
                     }
                 }
             }

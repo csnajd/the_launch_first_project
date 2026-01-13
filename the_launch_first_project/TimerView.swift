@@ -6,11 +6,32 @@
 //
 
 import SwiftUI
+import UIKit
+
+private struct AccessibilityEnabledKey: EnvironmentKey {
+    static let defaultValue: Bool = UIAccessibility.isVoiceOverRunning
+}
+
+extension EnvironmentValues {
+    var accessibilityEnabled: Bool {
+        get { self[AccessibilityEnabledKey.self] }
+        set { self[AccessibilityEnabledKey.self] = newValue }
+    }
+}
 
 struct TimerView: View {
     @ObservedObject var timerManager: TimerManager
     @Binding var navigationPath: NavigationPath
     let playerNames: [String]
+    @Environment(\.accessibilityEnabled) var isVoiceOverOn
+    
+    // Haptic
+    private let notificationGenerator = UINotificationFeedbackGenerator()
+    private let selectionGenerator = UISelectionFeedbackGenerator()
+    private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+    
+    @State private var previousTimeRemaining: Double = 0
+    @State private var hasTriggeredStartHaptic = false
     
     var body: some View {
         ZStack {
@@ -28,15 +49,19 @@ struct TimerView: View {
                             Text("انتهى الوقت!")
                                 .font(.MainText)
                                 .foregroundColor(.ppurple)
+                                .accessibilityLabel("انتهى الوقت")
                             
                             Spacer()
                             
                             Image(systemName: "bell.fill")
                                 .font(.system(size: 80))
                                 .foregroundColor(.yyellow)
+                                .accessibilityLabel("اِكْتَمَلَتِ الْجَوْلَة")
                             
                             Spacer()
                         }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("اِكْتَمَلَتِ الْجَوْلَة")
                     } else if timerManager.isRunning || timerManager.isPaused {
                         VStack(spacing: 20) {
                             Spacer()
@@ -54,10 +79,12 @@ struct TimerView: View {
                             VStack(spacing: 8) {
                                 Text("وقت اللعب !!")
                                     .font(.MainText)
+                                    .accessibilityLabel("وَقْتُ اللَّعِب")
                                 
                                 Text("اضغط يلا عشان يبدأ المؤقت")
                                     .font(.PlayerText)
                                     .multilineTextAlignment(.center)
+                                    .accessibilityLabel("إِضْغَطْ يَلَّا عَشَانْ يِبْدَأ الْمُؤَقِّتْ")
                             }
                             
                             Spacer()
@@ -66,11 +93,13 @@ struct TimerView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 220, height: 220)
+                                .accessibilityLabel("صورة ساعة")
                             
                             Spacer()
                             
                             TimePickerView(selectedTime: $timerManager.selectedTime)
                                 .frame(height: 100)
+                                .accessibilityLabel("اختيار وقت الجولة")
                             
                             Spacer()
                         }
@@ -81,6 +110,7 @@ struct TimerView: View {
                 
                 if timerManager.alarmPlaying {
                     Button {
+                        impactGenerator.impactOccurred()
                         timerManager.stopAlarm()
                     } label: {
                         ZStack {
@@ -97,10 +127,21 @@ struct TimerView: View {
                     .padding(.bottom, 60)
                 } else if timerManager.isRunning || timerManager.isPaused {
                     HStack(spacing: 20) {
-                        Button("-30s") { timerManager.adjustTime(by: -30) }
-                            .font(.title2).bold().foregroundColor(.ppurple)
+                        Button {
+                            impactGenerator.impactOccurred()
+                            timerManager.adjustTime(by: -30)
+                        } label: {
+                            Text("-30")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.ppurple)
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("إِنْقَاصُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
+                        .accessibilityRemoveTraits(.isButton)
                         
                         Button {
+                            impactGenerator.impactOccurred()
                             timerManager.togglePause()
                         } label: {
                             ZStack {
@@ -112,8 +153,10 @@ struct TimerView: View {
                                     .font(.title)
                             }
                         }
+                    .accessibilityLabel(timerManager.isRunning ? "إيقاف مؤقت" : "تشغيل مؤقت")
                         
                         Button {
+                            impactGenerator.impactOccurred()
                             timerManager.reset()
                         } label: {
                             ZStack {
@@ -125,13 +168,25 @@ struct TimerView: View {
                                     .font(.title2).bold()
                             }
                         }
+                    .accessibilityLabel("إعادة ضبط المؤقت")
                         
-                        Button("+30s") { timerManager.adjustTime(by: 30) }
-                            .font(.title2).bold().foregroundColor(.ppurple)
+                        Button {
+                            impactGenerator.impactOccurred()
+                            timerManager.adjustTime(by: 30)
+                        } label: {
+                            Text("+30")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(.ppurple)
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("زِيَادَةُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
+                        .accessibilityRemoveTraits(.isButton)
                     }
                     .padding(.bottom, 60)
                 } else {
                     Button {
+                        impactGenerator.impactOccurred()
                         timerManager.start()
                     } label: {
                         ZStack {
@@ -144,6 +199,7 @@ struct TimerView: View {
                                 .foregroundColor(.white)
                         }
                     }
+                    .accessibilityLabel("بدء اللعبة")
                     .padding(.bottom, 60)
                 }
             }
@@ -156,30 +212,103 @@ struct TimerView: View {
                 navigationPath.append(EndGameViewData(playerNames: playerNames))
             }
         }
+        .onChange(of: timerManager.isRunning) { oldValue, newValue in
+            if newValue && !oldValue && !hasTriggeredStartHaptic {
+                notificationGenerator.prepare()
+                notificationGenerator.notificationOccurred(.success)
+                hasTriggeredStartHaptic = true
+            } else if !newValue {
+                hasTriggeredStartHaptic = false
+            }
+        }
+        .onChange(of: timerManager.timeRemaining) { oldValue, newValue in
+            if timerManager.isRunning && newValue <= 5 && newValue > 0 && Int(oldValue) != Int(newValue) {
+                selectionGenerator.prepare()
+                selectionGenerator.selectionChanged()
+            }
+            previousTimeRemaining = newValue
+        }
+        .onChange(of: timerManager.alarmPlaying) { oldValue, newValue in
+            if newValue && !oldValue {
+                notificationGenerator.prepare()
+                notificationGenerator.notificationOccurred(.error)
+                
+                if UIAccessibility.isVoiceOverRunning {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        UIAccessibility.post(notification: .announcement, argument: "انتهى الوقت")
+                    }
+                }
+            }
+        }
     }
 }
 
 
 struct TimePickerView: View {
     @Binding var selectedTime: Double
+    
+    private var minutes: Int {
+        Int(selectedTime) / 60
+    }
+    
+    private var seconds: Int {
+        Int(selectedTime) % 60
+    }
+    
+    private var minutesBinding: Binding<Int> {
+        Binding(
+            get: { self.minutes },
+            set: { newMinutes in
+                selectedTime = Double(newMinutes * 60 + self.seconds)
+            }
+        )
+    }
+    
+    private var secondsBinding: Binding<Int> {
+        Binding(
+            get: { self.seconds },
+            set: { newSeconds in
+                selectedTime = Double(self.minutes * 60 + newSeconds)
+            }
+        )
+    }
+    
+    private var accessibilityTimeValue: String {
+        if minutes > 0 && seconds > 0 {
+            return "\(minutes) دَقِيقَة وَ \(seconds) ثَانِيَة"
+        } else if minutes > 0 {
+            return "\(minutes) دَقِيقَة"
+        } else {
+            return "\(seconds) ثَانِيَة"
+        }
+    }
+    
     var body: some View {
         HStack {
-            Picker("Minutes", selection: Binding(
-                get: { Int(selectedTime) / 60 },
-                set: { selectedTime = Double($0 * 60 + (Int(selectedTime) % 60)) }
-            )) {
-                ForEach(0...3, id: \.self) { Text("\($0) د").tag($0) }
-            }
-            .pickerStyle(.wheel)
-            
-            Picker("Seconds", selection: Binding(
-                get: { Int(selectedTime) % 60 },
-                set: { selectedTime = Double((Int(selectedTime) / 60) * 60 + $0) }
-            )) {
-                ForEach(0...59, id: \.self) { Text(String(format: "%02d ث", $0)).tag($0) }
-            }
-            .pickerStyle(.wheel)
+            minutesPicker
+            secondsPicker
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("مُدَّةُ الْجَوْلَة")
+        .accessibilityValue(accessibilityTimeValue)
+    }
+    
+    private var minutesPicker: some View {
+        Picker("Minutes", selection: minutesBinding) {
+            ForEach(0...3, id: \.self) { minute in
+                Text("\(minute) د").tag(minute)
+            }
+        }
+        .pickerStyle(.wheel)
+    }
+    
+    private var secondsPicker: some View {
+        Picker("Seconds", selection: secondsBinding) {
+            ForEach(0...59, id: \.self) { second in
+                Text(String(format: "%02d ث", second)).tag(second)
+            }
+        }
+        .pickerStyle(.wheel)
     }
 }
 
@@ -195,13 +324,15 @@ struct AnimatedClockView: View {
     
     var body: some View {
         ZStack {
-         ZStack {
+            ZStack {
                 Image("timer")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 200, height: 200)
                     .offset(y: -150)
-                }
+                    .accessibilityHidden(true)
+            }
+            .accessibilityHidden(true)
             
             Circle()
                 .trim(from: 0, to: progress)
@@ -218,9 +349,12 @@ struct AnimatedClockView: View {
                 .font(.system(size: 52, weight: .bold))
                 .foregroundColor(progress > 0.9 ? .red : .ppurple)
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("المؤقت المتبقي")
+        .accessibilityValue(Text(String(format: "%d دقائق و %02d ثواني", Int(timeRemaining) / 60, Int(timeRemaining) % 60)))
     }
+    
 }
-
 #Preview {
     struct PreviewWrapper: View {
         @State private var path = NavigationPath()

@@ -1,5 +1,6 @@
 // RoleView.swift
 import SwiftUI
+import UIKit
 
 struct RoleView: View {
     let playerNames: [String]
@@ -8,11 +9,31 @@ struct RoleView: View {
     @State private var remainingPlayerIndices: [Int] = []
     @State private var currentPlayerIndex: Int? = nil
     @State private var showRolePage = false
+    @Environment(\.accessibilityEnabled) var isVoiceOverOn
+    
+    // Haptic
+    private let notificationGenerator = UINotificationFeedbackGenerator()
+    private let heavyImpactGenerator = UIImpactFeedbackGenerator(style: .heavy)
+    private let lightImpactGenerator = UIImpactFeedbackGenerator(style: .light)
+    
+    private func triggerHapticForRole(_ role: String) {
+        switch role {
+        case "بنت":
+            notificationGenerator.notificationOccurred(.success)
+        case "عجوز":
+            heavyImpactGenerator.impactOccurred()
+        case "ولد":
+            lightImpactGenerator.impactOccurred()
+        default:
+            break
+        }
+    }
 
     var body: some View {
         ZStack {
             Color.background
                 .ignoresSafeArea()
+                .accessibilityHidden(true)
             
             VStack {
                 Spacer().frame(height: 100)
@@ -34,17 +55,25 @@ struct RoleView: View {
                         
                         Spacer()
                         
-                        Button(action: { showRolePage = true }) {
+                        Button(action: {
+                            let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                            impactGenerator.impactOccurred()
+                            showRolePage = true
+                        }) {
                             ZStack {
                                 Image("purpleBS")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 227, height: 55)
+                                    .accessibilityHidden(true)
                                 Text("يلا")
                                     .font(.MainText)
                                     .foregroundColor(.white)
                             }
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("يَلَّا")
+                        .accessibilityRemoveTraits(.isButton)
                         .padding(.bottom, 60)
                     }
                     .padding(.horizontal)
@@ -66,6 +95,7 @@ struct RoleView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(height: 250)
+                                    .accessibilityLabel(roleImageLabel(for: role))
                                 
                                 VStack(spacing: 15) {
                                     Text(role)
@@ -77,23 +107,38 @@ struct RoleView: View {
                                         .multilineTextAlignment(.center)
                                         .padding(.horizontal)
                                         .fixedSize(horizontal: false, vertical: true)
+                                        .accessibilityLabel(details.accessibilityInstructions)
                                 }
+                                .accessibilityElement(children: .combine)
+                            }
+                        }
+                        .onTapGesture {
+                            if isVoiceOverOn, let role = currentPlayerRole {
+                                triggerHapticForRole(role)
                             }
                         }
                         
                         Spacer()
                         
-                        Button(action: nextPlayer) {
+                        Button(action: {
+                            let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                            impactGenerator.impactOccurred()
+                            nextPlayer()
+                        }) {
                             ZStack {
                                 Image("purpleBS")
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 227, height: 55)
+                                    .accessibilityHidden(true)
                                 Text(remainingPlayerIndices.isEmpty ? "ابدأ اللعبة" : "يلا")
                                     .font(.MainText)
                                     .foregroundColor(.white)
                             }
                         }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(remainingPlayerIndices.isEmpty ? "اِبْدَأِ اللَّعِب" : "يَلَّا")
+                        .accessibilityRemoveTraits(.isButton)
                         .padding(.bottom, 60)
                     }
                     .padding(.horizontal)
@@ -102,7 +147,18 @@ struct RoleView: View {
         }
         .navigationBarBackButtonHidden(true)
         .withHomeButton(navigationPath: $navigationPath)
-        .onAppear(perform: startGame)
+        .onAppear {
+            startGame()
+        }
+        .onChange(of: showRolePage) { _, isShowing in
+            if isShowing {
+                if UIAccessibility.isVoiceOverRunning, let role = currentPlayerRole {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        triggerHapticForRole(role)
+                    }
+                }
+            }
+        }
     }
 
     private func startGame() {
@@ -146,16 +202,16 @@ struct RoleView: View {
         }
     }
 
-    private func roleDetails(for role: String) -> (image: String, instructions: String) {
+    private func roleDetails(for role: String) -> (image: String, instructions: String, accessibilityInstructions: String) {
         switch role {
         case "ولد":
-            return ("imBoy", "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!")
+            return ("imBoy", "لازم تحاول تعرف مين البنات عشان تخطبهم وانتبه من العجوز لا تقفطك!", "لَازِمْ تَحَاوِلْ تَعْرِفْ مِينْ الْبَنَاتْ عَشَانْ تَخْطِبْهُمْ وَانْتَبِهْ مِنَ الْعَجُوزْ لَا تَقْفُطْكْ!")
         case "بنت":
-            return ("imGirl", "لازم تنتبهين للولد لما يخطبك وتعلنين خطبتك!")
+            return ("imGirl", "لازم تنتبهين للولد لما يخطبك وتعلنين خطبتك!", "لَازِمْ تَنْتَبِهِينَ لِلْوَلَدْ لَمَّا يَخْطِبْكِ وَتُعْلِنِينَ خِطْبَتِكِ!")
         case "عجوز":
-            return ("imOld", "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!")
+            return ("imOld", "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!", "لَازِمْ تُرَاقِبِينَ اللَّاعِبِينَ وَتُقْفِطِينَ الْوَلَدْ عَشَانْ تَحْمِينَ بَنَاتِكِ!")
         default:
-            return ("imBoy", "دورك غير معروف")
+            return ("imBoy", "دورك غير معروف", "دَوْرُكْ غَيْرُ مَعْرُوفْ")
         }
     }
     
@@ -167,6 +223,19 @@ struct RoleView: View {
     private var currentPlayerRole: String? {
         guard let index = currentPlayerIndex else { return nil }
         return assignedRoles[index]
+    }
+    
+    private func roleImageLabel(for role: String) -> String {
+        switch role {
+        case "ولد":
+            return "صورة ولد"
+        case "بنت":
+            return "صورة بنت"
+        case "عجوز":
+            return "صورة عجوز"
+        default:
+            return "صورة شخصية"
+        }
     }
 }
 
