@@ -47,7 +47,7 @@ struct TimerView: View {
                             Spacer().frame(height: 0)
                             
                             Text("انتهى الوقت!")
-                                .font(.MainText)
+                                .font(.MainText).font(.system(.title, design: .rounded))
                                 .foregroundColor(.ppurple)
                                 .accessibilityLabel("انتهى الوقت")
                             
@@ -109,6 +109,7 @@ struct TimerView: View {
                 Spacer()
                 
                 if timerManager.alarmPlaying {
+                    
                     Button {
                         impactGenerator.impactOccurred()
                         timerManager.stopAlarm()

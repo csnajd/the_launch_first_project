@@ -32,7 +32,7 @@ extension View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 60, height: 60)
-                    
+                       
                     Image(systemName: "house.fill")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.background)
@@ -132,7 +132,7 @@ struct HomeView: View {
                                     .scaledToFit()
                                     .frame(width: 227, height: 55)
                                 Text("العب")
-                                    .font(.MainText)
+                                    .font(.title) // to be Dynamic Type
                                     .foregroundColor(.white)
                             }
                         }

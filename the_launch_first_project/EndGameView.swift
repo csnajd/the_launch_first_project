@@ -1,9 +1,3 @@
-//
-//  EndGameView.swift
-//  the_launch_first_project
-//
-//  Created by najd aljarba on 06/04/1447 AH.
-//
 
 import SwiftUI
 
@@ -39,8 +33,9 @@ struct EndGameView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 359, height: 60)
+                            .contentShape(Rectangle())
                         Text("كمل جولة ثانية")
-                            .font(.PlayerText)
+                            .font(.PlayerText).font(.system(.title3, design: .rounded))
                             .foregroundColor(.white)
                     }
                 }
@@ -57,7 +52,7 @@ struct EndGameView: View {
                             .frame(width: 359, height: 59)
                         Text("تغيير اللاعبين")
                             .font(.PlayerText)
-                            .foregroundColor(.white)
+                            .foregroundColor(.white).shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: 1)
                     }
                 }
             }
