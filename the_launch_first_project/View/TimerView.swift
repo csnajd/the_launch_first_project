@@ -23,15 +23,10 @@ struct TimerView: View {
     @ObservedObject var timerManager: TimerManager
     @Binding var navigationPath: NavigationPath
     let playerNames: [String]
-    @Environment(\.accessibilityEnabled) var isVoiceOverOn
     
-    // Haptic
-    private let notificationGenerator = UINotificationFeedbackGenerator()
-    private let selectionGenerator = UISelectionFeedbackGenerator()
-    private let impactGenerator = UIImpactFeedbackGenerator(style: .light)
     
-    @State private var previousTimeRemaining: Double = 0
-    @State private var hasTriggeredStartHaptic = false
+    /// ViewModel encapsulating transient UI-related timer state & side-effects.
+    @StateObject private var viewModel = TimerViewModel()
     
     var body: some View {
         ZStack {
@@ -111,7 +106,7 @@ struct TimerView: View {
                 if timerManager.alarmPlaying {
                     
                     Button {
-                        impactGenerator.impactOccurred()
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         timerManager.stopAlarm()
                     } label: {
                         ZStack {
@@ -129,7 +124,7 @@ struct TimerView: View {
                 } else if timerManager.isRunning || timerManager.isPaused {
                     HStack(spacing: 20) {
                         Button {
-                            impactGenerator.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             timerManager.adjustTime(by: -30)
                         } label: {
                             Text("-30")
@@ -142,7 +137,7 @@ struct TimerView: View {
                         .accessibilityRemoveTraits(.isButton)
                         
                         Button {
-                            impactGenerator.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             timerManager.togglePause()
                         } label: {
                             ZStack {
@@ -157,7 +152,7 @@ struct TimerView: View {
                     .accessibilityLabel(timerManager.isRunning ? "إيقاف مؤقت" : "تشغيل مؤقت")
                         
                         Button {
-                            impactGenerator.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             timerManager.reset()
                         } label: {
                             ZStack {
@@ -172,7 +167,7 @@ struct TimerView: View {
                     .accessibilityLabel("إعادة ضبط المؤقت")
                         
                         Button {
-                            impactGenerator.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
                             timerManager.adjustTime(by: 30)
                         } label: {
                             Text("+30")
@@ -187,7 +182,7 @@ struct TimerView: View {
                     .padding(.bottom, 60)
                 } else {
                     Button {
-                        impactGenerator.impactOccurred()
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         timerManager.start()
                     } label: {
                         ZStack {
@@ -214,32 +209,17 @@ struct TimerView: View {
             }
         }
         .onChange(of: timerManager.isRunning) { oldValue, newValue in
-            if newValue && !oldValue && !hasTriggeredStartHaptic {
-                notificationGenerator.prepare()
-                notificationGenerator.notificationOccurred(.success)
-                hasTriggeredStartHaptic = true
-            } else if !newValue {
-                hasTriggeredStartHaptic = false
-            }
+            viewModel.handleRunningChanged(oldValue: oldValue, newValue: newValue)
         }
         .onChange(of: timerManager.timeRemaining) { oldValue, newValue in
-            if timerManager.isRunning && newValue <= 5 && newValue > 0 && Int(oldValue) != Int(newValue) {
-                selectionGenerator.prepare()
-                selectionGenerator.selectionChanged()
-            }
-            previousTimeRemaining = newValue
+            viewModel.handleTimeRemainingChanged(
+                isRunning: timerManager.isRunning,
+                oldValue: oldValue,
+                newValue: newValue
+            )
         }
         .onChange(of: timerManager.alarmPlaying) { oldValue, newValue in
-            if newValue && !oldValue {
-                notificationGenerator.prepare()
-                notificationGenerator.notificationOccurred(.error)
-                
-                if UIAccessibility.isVoiceOverRunning {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        UIAccessibility.post(notification: .announcement, argument: "انتهى الوقت")
-                    }
-                }
-            }
+            viewModel.handleAlarmPlayingChanged(oldValue: oldValue, newValue: newValue)
         }
     }
 }

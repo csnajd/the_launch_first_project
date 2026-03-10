@@ -8,17 +8,6 @@
 import SwiftUI
 import UIKit
 
-struct TimerViewData: Hashable {
-    let playerNames: [String]
-}
-struct EndGameViewData: Hashable {
-    let playerNames: [String]
-}
-
-struct RoleViewData: Hashable {
-    let playerNames: [String]
-}
-
 extension View {
     func withHomeButton(navigationPath: Binding<NavigationPath>) -> some View {
         self.overlay(alignment: .topLeading) {
@@ -94,8 +83,8 @@ struct ContentView: View {
 
 struct HomeView: View {
     @Binding var navigationPath: NavigationPath
-    @State private var isButtonVisible = false
-    @Environment(\.accessibilityEnabled) var isVoiceOverOn
+    @StateObject private var viewModel = HomeViewModel()
+    
     
     var body: some View {
             ZStack {
@@ -111,20 +100,12 @@ struct HomeView: View {
                             .frame(width: 450, height: 450)
                             .accessibilityLabel("لُوقُو قَفْطَتَك")
                             .onAppear {
-                                let hapticGenerator = UIImpactFeedbackGenerator(style: .light)
-                                hapticGenerator.prepare()
-                                
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    hapticGenerator.impactOccurred()
-                                    withAnimation {
-                                        isButtonVisible = true
-                                    }
-                                }
+                                viewModel.handleLogoAppear()
                             }
  
                     Spacer()
                     
-                    if isButtonVisible {
+                    if viewModel.isButtonVisible {
                     NavigationLink(value: "AddPlayerView") {
                             ZStack {
                                 Image("purpleBS")

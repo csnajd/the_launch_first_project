@@ -5,9 +5,13 @@
 //
 
 import SwiftUI
-  struct AddPlayerView: View {
-    @State private var names: [String] = ["", "", ""]
+
+/// View responsible for laying out the player-name input screen.
+/// All dynamic state and validation is handled by `AddPlayerViewModel`.
+struct AddPlayerView: View {
     @Binding var navigationPath: NavigationPath
+    
+    @StateObject private var viewModel = AddPlayerViewModel()
 
     var body: some View {
 
@@ -28,7 +32,7 @@ import SwiftUI
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 18) {
-                            ForEach(names.indices, id: \.self) { i in
+                            ForEach(viewModel.names.indices, id: \.self) { i in
                                 HStack(spacing: 12) {
                                     ZStack {
                                         Image("yellowB")
@@ -37,8 +41,8 @@ import SwiftUI
                                             .accessibilityHidden(true)
 
                                         TextField("اسم", text: Binding(
-                                            get: { names[i] },
-                                            set: { names[i] = $0 }
+                                            get: { viewModel.names[i] },
+                                            set: { viewModel.names[i] = $0 }
                                         ))
                                         .multilineTextAlignment(.center)
                                         .font(.PlayerText)
@@ -49,9 +53,7 @@ import SwiftUI
                  
 
                                     Button {
-                                        if names.count > 3 {
-                                            names.remove(at: i)
-                                        }
+                                        viewModel.removeName(at: i)
                                     } label: {
                                         Image("yellowC")
                                             .resizable()
@@ -63,11 +65,11 @@ import SwiftUI
                                                     .foregroundColor(.black)
                                                     .accessibilityHidden(true)
                                             }
-                                            .opacity(names.count > 3 ? 1 : 0.35)
+                                            .opacity(viewModel.canDeleteRow ? 1 : 0.35)
                                     }
                                     .accessibilityLabel("حَذْفُ اللَّاعِب")
                                     .accessibilityAddTraits(.isButton)
-                                    .disabled(names.count <= 3)
+                                    .disabled(!viewModel.canDeleteRow)
                                     .buttonStyle(.plain)
                                 }
                                 .accessibilityElement(children: .combine)
@@ -79,7 +81,7 @@ import SwiftUI
                         .padding(.top, 8)
                     }
                     .frame(maxWidth: .infinity)
-                    .onChange(of: names.count) { _, newCount in
+                    .onChange(of: viewModel.names.count) { _, newCount in
                         withAnimation(.easeInOut) {
                             proxy.scrollTo(newCount - 1, anchor: .bottom)
                         }
@@ -91,11 +93,8 @@ import SwiftUI
 
                 
                 VStack(spacing: 12) {
-                    let trimmedNames = names
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
-                        .filter { !$0.isEmpty }
                     Button {
-                        names.append("")
+                        viewModel.addNameField()
                     } label: {
                         ZStack {
                             Image("blueB")
@@ -111,7 +110,7 @@ import SwiftUI
                     
                     NavigationLink(
                         destination: RoleView(
-                            playerNames: trimmedNames,
+                            playerNames: viewModel.trimmedNames,
                             navigationPath: $navigationPath
                         )
                     ) {
@@ -127,11 +126,11 @@ import SwiftUI
                         .accessibilityLabel("اِبْدَأِ اللَّعِب")
                         .accessibilityAddTraits(.isButton)
                     }
-                    .disabled(trimmedNames.count < 3)
+                    .disabled(!viewModel.canStartGame)
                     .buttonStyle(.plain)
                     .simultaneousGesture(
                         TapGesture().onEnded {
-                            if trimmedNames.count >= 3 {
+                            if viewModel.canStartGame {
                                 let impactGenerator = UIImpactFeedbackGenerator(style: .light)
                                 impactGenerator.impactOccurred()
                             }
@@ -146,8 +145,7 @@ import SwiftUI
         .environment(\.layoutDirection, .rightToLeft)
         .navigationBarBackButtonHidden(true)
         .withHomeButton(navigationPath: $navigationPath)
-        .ignoresSafeArea(.keyboard)
-     }
+    }
 }
 #Preview {
     AddPlayerView(navigationPath: .constant(NavigationPath()))

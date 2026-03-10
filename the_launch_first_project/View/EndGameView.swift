@@ -2,11 +2,15 @@
 import SwiftUI
 
 struct EndGameView: View {
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject var timerManager: TimerManager
     @Binding var navigationPath: NavigationPath
     
-    let playerNames: [String]
+    /// ViewModel that encapsulates end-game interactions & navigation.
+    @StateObject private var viewModel: EndGameViewModel
+    
+    init(timerManager: TimerManager, navigationPath: Binding<NavigationPath>, playerNames: [String]) {
+        self._navigationPath = navigationPath
+        _viewModel = StateObject(wrappedValue: EndGameViewModel(timerManager: timerManager, playerNames: playerNames))
+    }
 
     var body: some View {
         ZStack {
@@ -23,10 +27,7 @@ struct EndGameView: View {
                 Spacer()
 
                 Button(action: {
-                    timerManager.reset()
-                    navigationPath.removeLast(navigationPath.count)
-                    let roleViewData = RoleViewData(playerNames: playerNames)
-                    navigationPath.append(roleViewData)
+                    viewModel.playAnotherRound(navigationPath: $navigationPath)
                 }) {
                     ZStack {
                         Image("blueB")
@@ -42,8 +43,7 @@ struct EndGameView: View {
                 .padding(.bottom, 5)
 
                 Button(action: {
-                    navigationPath.removeLast(navigationPath.count)
-                    navigationPath.append("AddPlayerView")
+                    viewModel.changePlayers(navigationPath: $navigationPath)
                 }) {
                     ZStack {
                         Image("purpleBL")
@@ -59,8 +59,8 @@ struct EndGameView: View {
             .padding(.bottom, 60)
             .padding(.horizontal, 8)
             .navigationBarBackButtonHidden(true)
-             .onAppear {
-                timerManager.stopAlarm()
+            .onAppear {
+                viewModel.onAppear()
             }
         }
         .withHomeButton(navigationPath: $navigationPath)

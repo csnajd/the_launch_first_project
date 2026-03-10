@@ -14,7 +14,6 @@ class TimerManager: ObservableObject {
     @Published var totalTime: Double = 0
     @Published var isRunning: Bool = false
     @Published var isPaused: Bool = false
-    @Published var timerEnded: Bool = false
     @Published var alarmPlaying: Bool = false
     @Published var shouldNavigateToEndGame: Bool = false
 
@@ -32,17 +31,16 @@ class TimerManager: ObservableObject {
     
     
     func start() {
-         let clamped = min(selectedTime, 180)
-         selectedTime = clamped
-         totalTime = clamped
-         timeRemaining = clamped
-         isRunning = true
-         isPaused = false
-         timerEnded = false
-         alarmPlaying = false
-         shouldNavigateToEndGame = false
-         startTimer()
-     }
+        let clamped = min(selectedTime, 180)
+        selectedTime = clamped
+        totalTime = clamped
+        timeRemaining = clamped
+        isRunning = true
+        isPaused = false
+        alarmPlaying = false
+        shouldNavigateToEndGame = false
+        startTimer()
+    }
     
     
     func togglePause() {
@@ -58,14 +56,13 @@ class TimerManager: ObservableObject {
     
     func reset() {
         timer?.invalidate()
-              isRunning = false
-              isPaused = false
-              timeRemaining = 0
-              totalTime = 0
-              timerEnded = false
-              alarmPlaying = false
-              shouldNavigateToEndGame = false
-              alarmSound.stopAlarm()
+        isRunning = false
+        isPaused = false
+        timeRemaining = 0
+        totalTime = 0
+        alarmPlaying = false
+        shouldNavigateToEndGame = false
+        alarmSound.stopAlarm()
     }
     
     
@@ -93,7 +90,6 @@ class TimerManager: ObservableObject {
     private func timerCompleted() {
         timer?.invalidate()
         isRunning = false
-        timerEnded = true
         alarmPlaying = true
         alarmSound.playAlarm(for: 7.0)
     }
