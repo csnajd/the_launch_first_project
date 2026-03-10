@@ -84,14 +84,14 @@ struct ContentView: View {
 struct HomeView: View {
     @Binding var navigationPath: NavigationPath
     @StateObject private var viewModel = HomeViewModel()
-    
+    @State private var showHowToPlay = false
     
     var body: some View {
-            ZStack {
-                Color.background 
-                    .ignoresSafeArea()
-                
-                VStack {
+        ZStack {
+            Color.background
+                .ignoresSafeArea()
+            
+            VStack {
                     Spacer().frame(height: 100)
                         
                         Image("logo")
@@ -113,7 +113,7 @@ struct HomeView: View {
                                     .scaledToFit()
                                     .frame(width: 227, height: 55)
                                 Text("العب")
-                                    .font(.title) // to be Dynamic Type
+                                    .font(.title)  
                                     .foregroundColor(.white)
                             }
                         }
@@ -128,10 +128,74 @@ struct HomeView: View {
                         )
                     }
                 }
+        }
+        .overlay(alignment: .topTrailing) {
+            Button {
+                showHowToPlay = true
+            } label: {
+                ZStack {
+                    Image("yellowC")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 60, height: 60)
+                    Text("؟")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.background)
+                }
             }
+            .padding(.top, 30)
+            .padding(.trailing, 40)
+            .accessibilityLabel("طريقة اللعب")
+            .accessibilityHint("يعرض شرح طريقة اللعب")
+            .buttonStyle(PlainButtonStyle())
+        }
+        .sheet(isPresented: $showHowToPlay) {
+            HowToPlaySheet(isPresented: $showHowToPlay)
         }
     }
+}
 
+private struct HowToPlaySheet: View {
+    @Binding var isPresented: Bool
+    
+    var body: some View {
+        ZStack {
+            Color.background
+                .ignoresSafeArea()
+            
+            VStack(spacing: 24) {
+                Text("طريقة اللعب")
+                    .font(.largeTitle.weight(.heavy))
+                    .foregroundColor(.ppurple)
+                
+                // TODO: Replace placeholder with full "How to Play" instructions.
+                Text(" الشرح هنا...")
+                    .font(.body)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+                
+                Spacer()
+                
+                Button {
+                    isPresented = false
+                } label: {
+                    ZStack {
+                        Image("purpleBS")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 227, height: 55)
+                        Text("تم")
+                            .font(.MainText)
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.bottom, 40)
+
+            }
+            .padding(.top, 40)
+        }
+    }
+}
 
 #Preview {
     ContentView()

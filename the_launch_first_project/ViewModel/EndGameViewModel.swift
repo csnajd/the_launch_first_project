@@ -4,7 +4,6 @@ import SwiftUI
 /// Owns the interactions that occur when the round has finished.
 final class EndGameViewModel: ObservableObject {
     
-    // MARK: - Inputs
     
     private let timerManager: TimerManager
     let playerNames: [String]
@@ -14,14 +13,12 @@ final class EndGameViewModel: ObservableObject {
         self.playerNames = playerNames
     }
     
-    // MARK: - Screen Lifecycle
     
     /// Called when the view appears to ensure any playing alarms are stopped.
     func onAppear() {
         timerManager.stopAlarm()
     }
     
-    // MARK: - User Intents
     
     /// Starts another round with the same players.
     func playAnotherRound(navigationPath: Binding<NavigationPath>) {
