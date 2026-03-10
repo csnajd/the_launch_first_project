@@ -91,7 +91,7 @@ final class RoleViewModel: ObservableObject {
         case "عجوز":
             return RoleDetailsModel(
                 image: "imOld",
-                instructions: "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتك!",
+                instructions: "لازم تراقبين اللاعبين وتقفطين الولد عشان تحمين بناتس!",
                 accessibilityInstructions: "لَازِمْ تُرَاقِبِينَ اللَّاعِبِينَ وَتُقْفِطِينَ الْوَلَدْ عَشَانْ تَحْمِينَ بَنَاتِكِ!"
             )
         default:

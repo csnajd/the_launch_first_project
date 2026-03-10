@@ -84,8 +84,9 @@ struct RoleView: View {
                                 
                                 VStack(spacing: 15) {
                                     Text(role)
-                                        .font(.PlayerText)
-                                        .bold()
+                                        .font(.system(size: 48, weight: .heavy))
+                                        .foregroundColor(.ppurple)
+                                        .multilineTextAlignment(.center)
 
                                     Text(details.instructions)
                                         .font(.PlayerText)

@@ -122,62 +122,87 @@ struct TimerView: View {
                     .buttonStyle(.plain)
                     .padding(.bottom, 60)
                 } else if timerManager.isRunning || timerManager.isPaused {
-                    HStack(spacing: 20) {
-                        Button {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            timerManager.adjustTime(by: -30)
-                        } label: {
-                            Text("-30")
-                                .font(.title2)
-                                .bold()
-                                .foregroundColor(.ppurple)
+                    VStack(spacing: 24) {
+                        HStack(spacing: 20) {
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                timerManager.adjustTime(by: -30)
+                            } label: {
+                                Text("-30")
+                                    .font(.title2.weight(.bold))
+                                    .foregroundColor(.ppurple)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .clipShape(Capsule())
+                                    .overlay(Capsule().stroke(Color.ppurple, lineWidth: 2))
+                            }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("إِنْقَاصُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
+                            .accessibilityRemoveTraits(.isButton)
+                            
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                timerManager.togglePause()
+                            } label: {
+                                ZStack {
+                                    Image("yellowC")
+                                        .resizable()
+                                        .frame(width: 65, height: 65)
+                                    Image(systemName: timerManager.isRunning ? "pause.fill" : "play.fill")
+                                        .foregroundColor(.background)
+                                        .font(.title)
+                                }
+                            }
+                            .accessibilityLabel(timerManager.isRunning ? "إيقاف مؤقت" : "تشغيل مؤقت")
+                            
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                timerManager.reset()
+                            } label: {
+                                ZStack {
+                                    Image("yellowC")
+                                        .resizable()
+                                        .frame(width: 65, height: 65)
+                                    Image(systemName: "arrow.clockwise")
+                                        .foregroundColor(.background)
+                                        .font(.title2).bold()
+                                }
+                            }
+                            .accessibilityLabel("إعادة ضبط المؤقت")
+                            
+                            Button {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                timerManager.adjustTime(by: 30)
+                            } label: {
+                                Text("+30")
+                                    .font(.title2.weight(.bold))
+                                    .foregroundColor(.ppurple)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .clipShape(Capsule())
+                                    .overlay(Capsule().stroke(Color.ppurple, lineWidth: 2))
+                            }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel("زِيَادَةُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
+                            .accessibilityRemoveTraits(.isButton)
                         }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("إِنْقَاصُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
-                        .accessibilityRemoveTraits(.isButton)
                         
                         Button {
                             UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            timerManager.togglePause()
+                            timerManager.endRoundEarly()
                         } label: {
                             ZStack {
-                                Image("yellowC")
+                                Image("purpleBS")
                                     .resizable()
-                                    .frame(width: 65, height: 65)
-                                Image(systemName: timerManager.isRunning ? "pause.fill" : "play.fill")
-                                    .foregroundColor(.background)
-                                    .font(.title)
+                                    .scaledToFit()
+                                    .frame(width: 277, height: 55)
+                                Text("إنهاء الجولة")
+                                    .font(.MainText)
+                                    .foregroundColor(.white)
                             }
                         }
-                    .accessibilityLabel(timerManager.isRunning ? "إيقاف مؤقت" : "تشغيل مؤقت")
-                        
-                        Button {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            timerManager.reset()
-                        } label: {
-                            ZStack {
-                                Image("yellowC")
-                                    .resizable()
-                                    .frame(width: 65, height: 65)
-                                Image(systemName: "arrow.clockwise")
-                                    .foregroundColor(.background)
-                                    .font(.title2).bold()
-                            }
-                        }
-                    .accessibilityLabel("إعادة ضبط المؤقت")
-                        
-                        Button {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            timerManager.adjustTime(by: 30)
-                        } label: {
-                            Text("+30")
-                                .font(.title2)
-                                .bold()
-                                .foregroundColor(.ppurple)
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("زِيَادَةُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
-                        .accessibilityRemoveTraits(.isButton)
+                        .accessibilityLabel("إنهاء الجولة والانتقال للنتيجة")
+                        .accessibilityAddTraits(.isButton)
                     }
                     .padding(.bottom, 60)
                 } else {
@@ -265,9 +290,23 @@ struct TimePickerView: View {
     }
     
     var body: some View {
-        HStack {
-            minutesPicker
-            secondsPicker
+        ZStack {
+            // Highlight box to mimic a custom selection indicator in the center
+            RoundedRectangle(cornerRadius: 100)
+                .fill(Color.yyellow)
+                .frame(height: 40)
+                .padding(.horizontal, 60)
+            
+            HStack(spacing: 8) {
+                minutesPicker
+                
+                Text(":")
+                    .font(.system(size: 30, weight: .bold))
+                    .foregroundColor(.ppurple)
+                
+                secondsPicker
+            }
+            .frame(height: 160)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("مُدَّةُ الْجَوْلَة")
@@ -277,19 +316,27 @@ struct TimePickerView: View {
     private var minutesPicker: some View {
         Picker("Minutes", selection: minutesBinding) {
             ForEach(0...3, id: \.self) { minute in
-                Text("\(minute) د").tag(minute)
+                Text("\(minute)")
+                    .font(.PlayerText)
+                    .tag(minute)
             }
         }
         .pickerStyle(.wheel)
+        .frame(width: 100, height: 80)
+        .clipped()
     }
     
     private var secondsPicker: some View {
         Picker("Seconds", selection: secondsBinding) {
             ForEach(0...59, id: \.self) { second in
-                Text(String(format: "%02d ث", second)).tag(second)
+                Text(String(format: "%02d", second))
+                    .font(.PlayerText)
+                    .tag(second)
             }
         }
         .pickerStyle(.wheel)
+        .frame(width: 100, height: 80)
+        .clipped()
     }
 }
 
@@ -356,4 +403,38 @@ struct AnimatedClockView: View {
         }
     }
     return PreviewWrapper()
+}
+
+#Preview("شاشة البيكر كاملة") {
+    struct SetupPreviewWrapper: View {
+        @State private var path = NavigationPath()
+        @StateObject private var timerManager = TimerManager()
+        
+        var body: some View {
+            NavigationStack(path: $path) {
+                TimerView(
+                    timerManager: timerManager,
+                    navigationPath: $path,
+                    playerNames: ["أحمد", "سارة", "منى"]
+                )
+            }
+        }
+    }
+    return SetupPreviewWrapper()
+}
+
+#Preview("تصميم البيكر فقط") {
+    struct PickerOnlyPreview: View {
+        @State private var time: Double = 150
+        
+        var body: some View {
+            ZStack {
+                Color.background.ignoresSafeArea()
+                
+                TimePickerView(selectedTime: $time)
+                    .padding()
+            }
+        }
+    }
+    return PickerOnlyPreview()
 }

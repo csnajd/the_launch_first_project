@@ -5,6 +5,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 /// View responsible for laying out the player-name input screen.
 /// All dynamic state and validation is handled by `AddPlayerViewModel`.
@@ -14,11 +15,18 @@ struct AddPlayerView: View {
     @StateObject private var viewModel = AddPlayerViewModel()
 
     var body: some View {
-
         ZStack {
             Color.background
                 .ignoresSafeArea()
                 .ignoresSafeArea(.keyboard)
+                .onTapGesture {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
             
             VStack {
                 Spacer().frame(height: 100)
@@ -80,6 +88,7 @@ struct AddPlayerView: View {
                         }
                         .padding(.top, 8)
                     }
+                    .scrollDismissesKeyboard(.interactively)
                     .frame(maxWidth: .infinity)
                     .onChange(of: viewModel.names.count) { _, newCount in
                         withAnimation(.easeInOut) {

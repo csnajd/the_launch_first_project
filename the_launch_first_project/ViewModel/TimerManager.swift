@@ -9,7 +9,20 @@ import Foundation
 import SwiftUI
 
 class TimerManager: ObservableObject {
-    @Published var selectedTime: Double = 120  
+    // MARK: - Configuration
+    private let minTime: Double = 30
+    private let maxTime: Double = 180
+    
+    // MARK: - Published State
+    
+    @Published var selectedTime: Double = 120 {
+        didSet {
+            let clamped = min(max(selectedTime, minTime), maxTime)
+            if clamped != selectedTime {
+                selectedTime = clamped
+            }
+        }
+    }
     @Published var timeRemaining: Double = 0
     @Published var totalTime: Double = 0
     @Published var isRunning: Bool = false
@@ -31,7 +44,7 @@ class TimerManager: ObservableObject {
     
     
     func start() {
-        let clamped = min(selectedTime, 180)
+        let clamped = min(max(selectedTime, minTime), maxTime)
         selectedTime = clamped
         totalTime = clamped
         timeRemaining = clamped
@@ -67,9 +80,9 @@ class TimerManager: ObservableObject {
     
     
     func adjustTime(by seconds: Double) {
-        let newRemaining = max(0, min(180, timeRemaining + seconds))
+        let newRemaining = min(max(timeRemaining + seconds, minTime), maxTime)
         timeRemaining = newRemaining
-        totalTime = min(180, max(totalTime, newRemaining))
+        totalTime = min(maxTime, max(totalTime, newRemaining))
     }
     
     
@@ -101,6 +114,15 @@ class TimerManager: ObservableObject {
         alarmPlaying = false
         shouldNavigateToEndGame = true
     }
+
+    /// Ends the current round early and navigates to the end-game screen.
+    func endRoundEarly() {
+        timer?.invalidate()
+        isRunning = false
+        isPaused = false
+        alarmPlaying = false
+        shouldNavigateToEndGame = true
+    }
 }
 
- 
+
