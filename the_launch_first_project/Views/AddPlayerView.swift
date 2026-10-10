@@ -11,8 +11,9 @@ import UIKit
 /// All dynamic state and validation is handled by `AddPlayerViewModel`.
 struct AddPlayerView: View {
     @Binding var navigationPath: NavigationPath
-    
+
     @StateObject private var viewModel = AddPlayerViewModel()
+    @FocusState private var focusedPlayerID: UUID?
 
     var body: some View {
         ZStack {
@@ -27,10 +28,10 @@ struct AddPlayerView: View {
                         for: nil
                     )
                 }
-            
+
             VStack {
                 Spacer().frame(height: 100)
-                
+
                 Text("أضف ٣ لاعبين على الأقل :")
                     .font(.MainText)
                     .foregroundColor(.black)
@@ -40,7 +41,7 @@ struct AddPlayerView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         LazyVStack(spacing: 18) {
-                            ForEach(viewModel.names.indices, id: \.self) { i in
+                            ForEach($viewModel.players) { $player in
                                 HStack(spacing: 12) {
                                     ZStack {
                                         Image("yellowB")
@@ -48,20 +49,26 @@ struct AddPlayerView: View {
                                             .frame(width: 274, height: 40)
                                             .accessibilityHidden(true)
 
-                                        TextField("اسم", text: Binding(
-                                            get: { viewModel.names[i] },
-                                            set: { viewModel.names[i] = $0 }
-                                        ))
-                                        .multilineTextAlignment(.center)
-                                        .font(.PlayerText)
-                                        .foregroundColor(.black)
-                                        .frame(width: 274, height: 40)
-                                        .accessibilityLabel("اِكْتُبِ اسْمَ اللَّاعِب")
+                                        TextField("اسم", text: $player.name)
+                                            .multilineTextAlignment(.center)
+                                            .font(.PlayerText)
+                                            .foregroundColor(.black)
+                                            .frame(width: 274, height: 40)
+                                            .accessibilityLabel("اِكْتُبِ اسْمَ اللَّاعِب")
+                                            .submitLabel(.next)
+                                            .focused($focusedPlayerID, equals: player.id)
+                                            .onSubmit {
+                                                // Keep typing uninterrupted: Return adds and focuses a new field.
+                                                viewModel.addNameField()
+                                                guard let newID = viewModel.players.last?.id else { return }
+                                                DispatchQueue.main.async {
+                                                    focusedPlayerID = newID
+                                                }
+                                            }
                                     }
-                 
 
                                     Button {
-                                        viewModel.removeName(at: i)
+                                        viewModel.removeName(id: player.id)
                                     } label: {
                                         Image("yellowC")
                                             .resizable()
@@ -81,26 +88,27 @@ struct AddPlayerView: View {
                                     .buttonStyle(.plain)
                                 }
                                 .accessibilityElement(children: .combine)
-                                .id(i)
+                                .id(player.id)
                             }
-                            
+
                             Color.clear.frame(height: 160).id("BOTTOM")
                         }
                         .padding(.top, 8)
                     }
                     .scrollDismissesKeyboard(.interactively)
                     .frame(maxWidth: .infinity)
-                    .onChange(of: viewModel.names.count) { _, newCount in
+                    .onChange(of: viewModel.players.count) { _, _ in
+                        guard let lastID = viewModel.players.last?.id else { return }
                         withAnimation(.easeInOut) {
-                            proxy.scrollTo(newCount - 1, anchor: .bottom)
+                            proxy.scrollTo(lastID, anchor: .bottom)
                         }
                     }
                 }
 
-            
+
                 Spacer()
 
-                
+
                 VStack(spacing: 12) {
                     Button {
                         viewModel.addNameField()
@@ -116,7 +124,7 @@ struct AddPlayerView: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    
+
                     NavigationLink(
                         destination: RoleView(
                             playerNames: viewModel.trimmedNames,
