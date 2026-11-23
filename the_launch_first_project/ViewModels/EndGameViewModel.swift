@@ -30,6 +30,7 @@ final class EndGameViewModel: ObservableObject {
     
     /// Navigates back to the add-players screen to select different players.
     func changePlayers(navigationPath: Binding<NavigationPath>) {
+        timerManager.reset()
         navigationPath.wrappedValue.removeLast(navigationPath.wrappedValue.count)
         navigationPath.wrappedValue.append("AddPlayerView")
     }

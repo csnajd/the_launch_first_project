@@ -57,18 +57,22 @@ class TimerManager: ObservableObject {
     
     
     func togglePause() {
-        isRunning.toggle()
         if isRunning {
-            startTimer()
-        } else {
-            timer?.invalidate()
+            isRunning = false
             isPaused = true
+            timer?.invalidate()
+            timer = nil
+        } else if isPaused {
+            isPaused = false
+            isRunning = true
+            startTimer()
         }
     }
     
     
     func reset() {
         timer?.invalidate()
+        timer = nil
         isRunning = false
         isPaused = false
         timeRemaining = 0
@@ -79,7 +83,13 @@ class TimerManager: ObservableObject {
     }
     
     
+    var canDecreaseTime: Bool {
+        timeRemaining > minTime
+    }
+
     func adjustTime(by seconds: Double) {
+        guard seconds >= 0 || timeRemaining > minTime else { return }
+
         let newRemaining = min(max(timeRemaining + seconds, minTime), maxTime)
         timeRemaining = newRemaining
         totalTime = min(maxTime, max(totalTime, newRemaining))
@@ -102,7 +112,9 @@ class TimerManager: ObservableObject {
     
     private func timerCompleted() {
         timer?.invalidate()
+        timer = nil
         isRunning = false
+        isPaused = false
         alarmPlaying = true
         alarmSound.playAlarm(for: 7.0)
     }

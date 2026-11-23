@@ -29,8 +29,12 @@ struct RoleView: View {
                         
                         VStack(spacing: 30) {
                             Text(player)
-                                .font(.PlayerNameText)
+                                .font(.custom("splart-h-mawaddah2black", size: 52))
                                 .bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
                             
                             Text("لا تخلي أحد غيرك يشوف")
                                 .font(.PlayerText)
@@ -58,72 +62,81 @@ struct RoleView: View {
                         }
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel("يَلَّا")
-                        .accessibilityRemoveTraits(.isButton)
                         .padding(.bottom, 60)
                     }
                     .padding(.horizontal)
                 }
 
                 if let player = viewModel.currentPlayerName, viewModel.showRolePage {
-                    VStack {
-                        Spacer()
-                        
-                        VStack(spacing: 30) {
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+
+                        VStack(spacing: 0) {
                             Text(player)
-                                .font(.PlayerNameText)
+                                .font(.custom("splart-h-mawaddah2black", size: 52))
                                 .bold()
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 64)
 
                             if let role = viewModel.currentPlayerRole {
                                 let details = viewModel.roleDetails(for: role)
-                                
+
                                 Image(details.image)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(height: 250)
+                                    .frame(height: 210)
                                     .accessibilityLabel(viewModel.roleImageLabel(for: role))
-                                
-                                VStack(spacing: 15) {
+
+                                VStack(spacing: 8) {
                                     Text(role)
                                         .font(.system(size: 48, weight: .heavy))
                                         .foregroundColor(.ppurple)
                                         .multilineTextAlignment(.center)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 58)
 
                                     Text(details.instructions)
                                         .font(.PlayerText)
                                         .multilineTextAlignment(.center)
                                         .padding(.horizontal)
-                                        .fixedSize(horizontal: false, vertical: true)
+                                        .lineLimit(4)
+                                        .minimumScaleFactor(0.8)
+                                        .frame(maxWidth: .infinity)
+                                        .frame(height: 104)
                                         .accessibilityLabel(details.accessibilityInstructions)
                                 }
+                                .padding(.top, 12)
                                 .accessibilityElement(children: .combine)
                             }
+
+                            Button(action: {
+                                let impactGenerator = UIImpactFeedbackGenerator(style: .light)
+                                impactGenerator.impactOccurred()
+                                viewModel.nextPlayer()
+                            }) {
+                                ZStack {
+                                    Image("purpleBS")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 227, height: 55)
+                                        .accessibilityHidden(true)
+                                    Text(viewModel.remainingPlayerIndices.isEmpty ? "ابدأ اللعبة" : "يلا")
+                                        .font(.MainText)
+                                        .foregroundColor(.white)
+                                }
+                            }
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(viewModel.remainingPlayerIndices.isEmpty ? "اِبْدَأِ اللَّعِب" : "يَلَّا")
+                            .padding(.top, 18)
+                            .padding(.bottom, 60)
                         }
                         .onTapGesture {
                             viewModel.handleRoleTapped(isVoiceOverOn: isVoiceOverOn)
                         }
-                        
-                        Spacer()
-                        
-                        Button(action: {
-                            let impactGenerator = UIImpactFeedbackGenerator(style: .light)
-                            impactGenerator.impactOccurred()
-                            viewModel.nextPlayer()
-                        }) {
-                            ZStack {
-                                Image("purpleBS")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 227, height: 55)
-                                    .accessibilityHidden(true)
-                                Text(viewModel.remainingPlayerIndices.isEmpty ? "ابدأ اللعبة" : "يلا")
-                                    .font(.MainText)
-                                    .foregroundColor(.white)
-                            }
-                        }
-                        .accessibilityElement(children: .ignore)
-                        .accessibilityLabel(viewModel.remainingPlayerIndices.isEmpty ? "اِبْدَأِ اللَّعِب" : "يَلَّا")
-                        .accessibilityRemoveTraits(.isButton)
-                        .padding(.bottom, 60)
+
+                        Spacer(minLength: 0)
                     }
                     .padding(.horizontal)
                 }
