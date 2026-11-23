@@ -9,8 +9,22 @@ struct PlayerInput: Identifiable {
 /// ViewModel for `AddPlayerView`, responsible for managing the dynamic list of player names.
 final class AddPlayerViewModel: ObservableObject {
 
-    /// Raw player inputs; stable IDs keep SwiftUI field bindings independent of list indexes.
-    @Published var players: [PlayerInput] = (0..<3).map { _ in PlayerInput() }
+    private static let savedNamesKey = "qaffatek.savedPlayerNames"
+
+    /// Player inputs are saved locally after every edit, addition, or deletion.
+    @Published var players: [PlayerInput] {
+        didSet {
+            UserDefaults.standard.set(players.map(\.name), forKey: Self.savedNamesKey)
+        }
+    }
+
+    init() {
+        let savedNames = UserDefaults.standard.stringArray(forKey: Self.savedNamesKey) ?? []
+        players = savedNames.map { PlayerInput(name: $0) }
+        while players.count < 3 {
+            players.append(PlayerInput())
+        }
+    }
 
     /// Returns the trimmed, non-empty player names used to start the game.
     var trimmedNames: [String] {

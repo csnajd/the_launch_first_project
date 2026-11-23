@@ -139,6 +139,8 @@ struct TimerView: View {
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel("إِنْقَاصُ الْوَقْتِ ثَلَاثِينَ ثَانِيَة")
                             .accessibilityRemoveTraits(.isButton)
+                            .disabled(!timerManager.canDecreaseTime)
+                            .opacity(timerManager.canDecreaseTime ? 1 : 0.4)
                             
                             Button {
                                 UIImpactFeedbackGenerator(style: .light).impactOccurred()

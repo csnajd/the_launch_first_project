@@ -78,6 +78,11 @@ struct ContentView: View {
                 }
             }
         }
+        .onChange(of: navigationPath.count) { oldCount, newCount in
+            if oldCount > 0 && newCount == 0 {
+                timerManager.reset()
+            }
+        }
     }
 }
 
@@ -156,175 +161,67 @@ struct HomeView: View {
 }
 private struct HowToPlaySheet: View {
     @Binding var isPresented: Bool
+    @State private var selectedRole = 0
+
+    private let roles: [(name: String, image: String, description: String)] = [
+        ("العجوز", "imOld", "راقبي اللاعبين وحاولي تقفطين الولد قبل ما يغمز لكل البنات. وإذا قفطتيه، قولي: «قفطتك!»"),
+        ("الولد", "imBoy", "حاول تغمز لكل البنات بدون ما تنتبه لك العجوز. انتبه تقفطك!"),
+        ("البنت", "imGirl", "إذا غمز لك الولد، لا تكشفينه، وقولي: «انخطبت!»")
+    ]
     
     var body: some View {
         ZStack {
             Color.background
                 .ignoresSafeArea()
-            
-            ScrollView {
-                VStack(spacing: 20) {
+
+            VStack(spacing: 0) {
+                VStack(spacing: 8) {
                     Text("طريقة اللعب")
                         .font(.MainText)
                         .foregroundColor(.ppurple)
-                        .padding(.top, 40)
-                        .accessibilityLabel("طريقة اللعب")
                         .accessibilityAddTraits(.isHeader)
+
+                    Text("تعرّف على الأدوار وطريقة الفوز")
+                        .font(.PlayerText)
+                        .foregroundColor(.ppurple.opacity(0.8))
+                        .multilineTextAlignment(.center)
                     
-                    // الأدوار
-                    HStack(spacing: 12) {
-                        ForEach([("imBoy", "الولد"), ("imGirl", "البنت"), ("imOld", "العجوز")], id: \.1) { imageName, name in
-                            VStack(spacing: 6) {
-                                Image(imageName)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 50, height: 50)
-                                Text(name)
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(
-                                Image("yellowC")
-                                    .resizable()
-                                    .scaledToFill()
-                            )
-                            .clipShape(Circle())
-                            .accessibilityLabel("دور \(name)")
-                            .accessibilityElement(children: .combine)
+                    Text("لا تكشف دورك لأحد. السرية أساس اللعبة!")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.ppurple.opacity(0.85))
+                        .multilineTextAlignment(.center)
+
+                }
+                .padding(.top, 24)
+                .padding(.horizontal, 16)
+
+
+                GeometryReader { geometry in
+                    TabView(selection: $selectedRole) {
+                        ForEach(roles.indices, id: \.self) { index in
+                            rolePage(roles[index], availableHeight: geometry.size.height)
+                                .tag(index)
                         }
                     }
-                    .padding(.horizontal)
-                    .accessibilityLabel("أدوار اللعبة")
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .environment(\.layoutDirection, .rightToLeft)
+                }
 
-                    // القواعد - كل دور لحاله
-                    VStack(spacing: 16) {
-                        
-                        // الولد
-                        VStack(alignment: .trailing, spacing: 8) {
-                            HStack(spacing: 10) {
-                                Image("imBoy")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 35, height: 35)
-                                Text("الولد")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text("يغمز للبنات بدون ما يشوفه أحد")
-                                .font(.PlayerText)
-                                .foregroundColor(.white.opacity(0.85))
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            HStack(spacing: 6) {
-                                Text("يفوز لو غمز لكل البنات بدون ما ينقفط!")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .multilineTextAlignment(.trailing)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding()
-                        .background(Image("blueB").resizable().scaledToFill())
-                        .cornerRadius(14)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("الولد: يغمز للبنات بدون ما يشوفه أحد. يفوز لو غمز لكل البنات بدون ما ينقفط")
-
-                        // البنت
-                        VStack(alignment: .trailing, spacing: 8) {
-                            HStack(spacing: 10) {
-                                Image("imGirl")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 35, height: 35)
-                                Text("البنت")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text("تستقبل الغمزة بهدوء بدون ما تعلم مين هو الولد ")
-                                .font(.PlayerText)
-                                .foregroundColor(.white.opacity(0.85))
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            HStack(spacing: 6) {
-                                Text("إذا انخطبت لازم تقول بصوت عالٍ «انخطبت!»")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .multilineTextAlignment(.trailing)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding()
-                        .background(Image("blueB").resizable().scaledToFill())
-                        .cornerRadius(14)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("البنت: تستقبل الغمزة بهدوء بدون ما تعلم مين هو الولد. إذا انخبطت لازم تقول بصوت عالٍ انخبطت")
-
-                        // العجوز
-                        VStack(alignment: .trailing, spacing: 8) {
-                            HStack(spacing: 10) {
-                                Image("imOld")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 35, height: 35)
-                                Text("العجوز")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text("تراقب الولد طول الوقت")
-                                .font(.PlayerText)
-                                .foregroundColor(.white.opacity(0.85))
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            HStack(spacing: 6) {
-                                Text("تفوز لو قفطت الولد قبل ما يكمّل على الكل!")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white.opacity(0.85))
-                                    .multilineTextAlignment(.trailing)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding()
-                        .background(Image("blueB").resizable().scaledToFill())
-                        .cornerRadius(14)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("العجوز: تراقب الولد طول الوقت. تفوز لو قفطت الولد قبل ما يكمّل على الكل")
-
-                        // السرية
-                        VStack(alignment: .trailing, spacing: 8) {
-                            HStack(spacing: 10) {
-                                Text("🤫")
-                                    .font(.system(size: 28))
-                                Text("السرية")
-                                    .font(.PlayerText)
-                                    .foregroundColor(.white)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                            
-                            Text("السرية أساس اللعبة — لا تعلم أحد دورك!")
-                                .font(.PlayerText)
-                                .foregroundColor(.white.opacity(0.85))
-                                .multilineTextAlignment(.trailing)
-                                .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding()
-                        .background(Image("blueB").resizable().scaledToFill())
-                        .cornerRadius(14)
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("السرية: أساس اللعبة — لا تعلم أحد دورك")
+                HStack(spacing: 8) {
+                    ForEach(roles.indices, id: \.self) { index in
+                        Capsule()
+                            .fill(index == selectedRole ? Color.ppurple : Color.ppurple.opacity(0.28))
+                            .frame(width: index == selectedRole ? 22 : 8, height: 8)
+                            .accessibilityHidden(true)
                     }
-                    .padding(.horizontal)
-                    
+                }
+                .padding(.top, 4)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("الصفحة \(selectedRole + 1) من ٣")
+
+                Spacer(minLength: 10)
+
+
                     Button {
                         isPresented = false
                     } label: {
@@ -333,6 +230,7 @@ private struct HowToPlaySheet: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 227, height: 55)
+                                .accessibilityHidden(true)
                             Text("تم")
                                 .font(.MainText)
                                 .foregroundColor(.white)
@@ -341,12 +239,47 @@ private struct HowToPlaySheet: View {
                     .accessibilityLabel("تم")
                     .accessibilityHint("يغلق شرح طريقة اللعب")
                     .accessibilityAddTraits(.isButton)
-                    .padding(.bottom, 40)
+                    .buttonStyle(.plain)
                 }
+                .padding(.bottom, 24)
             }
+            .environment(\.layoutDirection, .rightToLeft)
         }
     }
-}
+
+    private func rolePage(
+        _ role: (name: String, image: String, description: String),
+        availableHeight: CGFloat
+    ) -> some View {
+        let illustrationHeight = min(215, max(105, availableHeight * 0.34))
+
+        return VStack(spacing: 12) {
+            Text(role.name)
+                .font(.system(size: 42, weight: .heavy))
+                .foregroundColor(.ppurple)
+                .multilineTextAlignment(.center)
+
+            Image(role.image)
+                .resizable()
+                .scaledToFit()
+                .frame(height: illustrationHeight)
+                .accessibilityLabel(role.name)
+                .accessibilityAddTraits(.isImage)
+
+            Text(role.description)
+                .font(.PlayerText)
+                .foregroundColor(.primary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, 20)
+
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 8)
+        .environment(\.layoutDirection, .rightToLeft)
+        .accessibilityElement(children: .contain)
+    }
+
 #Preview {
     ContentView()
 }
